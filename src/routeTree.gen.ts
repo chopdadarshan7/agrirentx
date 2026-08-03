@@ -10,33 +10,376 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as FarmerRouteImport } from './routes/farmer'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as RegisterRouteImport } from './routes/register'
+import { Route as RentalerRouteImport } from './routes/rentaler'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminBookingsRouteImport } from './routes/admin.bookings'
+import { Route as AdminEquipmentRouteImport } from './routes/admin.equipment'
+import { Route as AdminPaymentsRouteImport } from './routes/admin.payments'
+import { Route as AdminRentalersRouteImport } from './routes/admin.rentalers'
+import { Route as AdminReviewsRouteImport } from './routes/admin.reviews'
+import { Route as AdminUsersRouteImport } from './routes/admin.users'
+import { Route as EquipmentIndexRouteImport } from './routes/equipment.index'
+import { Route as EquipmentEquipmentIdRouteImport } from './routes/equipment.$equipmentId'
+import { Route as FarmerIndexRouteImport } from './routes/farmer.index'
+import { Route as FarmerNotificationsRouteImport } from './routes/farmer.notifications'
+import { Route as FarmerPaymentsRouteImport } from './routes/farmer.payments'
+import { Route as FarmerProfileRouteImport } from './routes/farmer.profile'
+import { Route as FarmerWishlistRouteImport } from './routes/farmer.wishlist'
+import { Route as RentalerIndexRouteImport } from './routes/rentaler.index'
+import { Route as RentalerAnalyticsRouteImport } from './routes/rentaler.analytics'
+import { Route as FarmerBookingsIndexRouteImport } from './routes/farmer.bookings.index'
+import { Route as FarmerBookingsBookingIdRouteImport } from './routes/farmer.bookings.$bookingId'
+import { Route as RentalerBookingsIndexRouteImport } from './routes/rentaler.bookings.index'
+import { Route as RentalerBookingsBookingIdRouteImport } from './routes/rentaler.bookings.$bookingId'
+import { Route as RentalerEquipmentIndexRouteImport } from './routes/rentaler.equipment.index'
+import { Route as RentalerEquipmentNewRouteImport } from './routes/rentaler.equipment.new'
+import { Route as RentalerEquipmentEquipmentIdEditRouteImport } from './routes/rentaler.equipment.$equipmentId.edit'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FarmerRoute = FarmerRouteImport.update({
+  id: '/farmer',
+  path: '/farmer',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RentalerRoute = RentalerRouteImport.update({
+  id: '/rentaler',
+  path: '/rentaler',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminBookingsRoute = AdminBookingsRouteImport.update({
+  id: '/bookings',
+  path: '/bookings',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminEquipmentRoute = AdminEquipmentRouteImport.update({
+  id: '/equipment',
+  path: '/equipment',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminRentalersRoute = AdminRentalersRouteImport.update({
+  id: '/rentalers',
+  path: '/rentalers',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminReviewsRoute = AdminReviewsRouteImport.update({
+  id: '/reviews',
+  path: '/reviews',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminRoute,
+} as any)
+const EquipmentIndexRoute = EquipmentIndexRouteImport.update({
+  id: '/equipment/',
+  path: '/equipment/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EquipmentEquipmentIdRoute = EquipmentEquipmentIdRouteImport.update({
+  id: '/equipment/$equipmentId',
+  path: '/equipment/$equipmentId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FarmerIndexRoute = FarmerIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => FarmerRoute,
+} as any)
+const FarmerNotificationsRoute = FarmerNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => FarmerRoute,
+} as any)
+const FarmerPaymentsRoute = FarmerPaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => FarmerRoute,
+} as any)
+const FarmerProfileRoute = FarmerProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => FarmerRoute,
+} as any)
+const FarmerWishlistRoute = FarmerWishlistRouteImport.update({
+  id: '/wishlist',
+  path: '/wishlist',
+  getParentRoute: () => FarmerRoute,
+} as any)
+const RentalerIndexRoute = RentalerIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => RentalerRoute,
+} as any)
+const RentalerAnalyticsRoute = RentalerAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => RentalerRoute,
+} as any)
+const FarmerBookingsIndexRoute = FarmerBookingsIndexRouteImport.update({
+  id: '/bookings/',
+  path: '/bookings/',
+  getParentRoute: () => FarmerRoute,
+} as any)
+const FarmerBookingsBookingIdRoute = FarmerBookingsBookingIdRouteImport.update({
+  id: '/bookings/$bookingId',
+  path: '/bookings/$bookingId',
+  getParentRoute: () => FarmerRoute,
+} as any)
+const RentalerBookingsIndexRoute = RentalerBookingsIndexRouteImport.update({
+  id: '/bookings/',
+  path: '/bookings/',
+  getParentRoute: () => RentalerRoute,
+} as any)
+const RentalerBookingsBookingIdRoute =
+  RentalerBookingsBookingIdRouteImport.update({
+    id: '/bookings/$bookingId',
+    path: '/bookings/$bookingId',
+    getParentRoute: () => RentalerRoute,
+  } as any)
+const RentalerEquipmentIndexRoute = RentalerEquipmentIndexRouteImport.update({
+  id: '/equipment/',
+  path: '/equipment/',
+  getParentRoute: () => RentalerRoute,
+} as any)
+const RentalerEquipmentNewRoute = RentalerEquipmentNewRouteImport.update({
+  id: '/equipment/new',
+  path: '/equipment/new',
+  getParentRoute: () => RentalerRoute,
+} as any)
+const RentalerEquipmentEquipmentIdEditRoute =
+  RentalerEquipmentEquipmentIdEditRouteImport.update({
+    id: '/equipment/$equipmentId/edit',
+    path: '/equipment/$equipmentId/edit',
+    getParentRoute: () => RentalerRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/farmer': typeof FarmerRouteWithChildren
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
+  '/rentaler': typeof RentalerRouteWithChildren
+  '/admin/bookings': typeof AdminBookingsRoute
+  '/admin/equipment': typeof AdminEquipmentRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/rentalers': typeof AdminRentalersRoute
+  '/admin/reviews': typeof AdminReviewsRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/equipment/$equipmentId': typeof EquipmentEquipmentIdRoute
+  '/farmer/notifications': typeof FarmerNotificationsRoute
+  '/farmer/payments': typeof FarmerPaymentsRoute
+  '/farmer/profile': typeof FarmerProfileRoute
+  '/farmer/wishlist': typeof FarmerWishlistRoute
+  '/rentaler/analytics': typeof RentalerAnalyticsRoute
+  '/admin/': typeof AdminIndexRoute
+  '/equipment/': typeof EquipmentIndexRoute
+  '/farmer/': typeof FarmerIndexRoute
+  '/rentaler/': typeof RentalerIndexRoute
+  '/farmer/bookings/$bookingId': typeof FarmerBookingsBookingIdRoute
+  '/rentaler/bookings/$bookingId': typeof RentalerBookingsBookingIdRoute
+  '/rentaler/equipment/new': typeof RentalerEquipmentNewRoute
+  '/farmer/bookings/': typeof FarmerBookingsIndexRoute
+  '/rentaler/bookings/': typeof RentalerBookingsIndexRoute
+  '/rentaler/equipment/': typeof RentalerEquipmentIndexRoute
+  '/rentaler/equipment/$equipmentId/edit': typeof RentalerEquipmentEquipmentIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
+  '/admin/bookings': typeof AdminBookingsRoute
+  '/admin/equipment': typeof AdminEquipmentRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/rentalers': typeof AdminRentalersRoute
+  '/admin/reviews': typeof AdminReviewsRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/equipment/$equipmentId': typeof EquipmentEquipmentIdRoute
+  '/farmer/notifications': typeof FarmerNotificationsRoute
+  '/farmer/payments': typeof FarmerPaymentsRoute
+  '/farmer/profile': typeof FarmerProfileRoute
+  '/farmer/wishlist': typeof FarmerWishlistRoute
+  '/rentaler/analytics': typeof RentalerAnalyticsRoute
+  '/admin': typeof AdminIndexRoute
+  '/equipment': typeof EquipmentIndexRoute
+  '/farmer': typeof FarmerIndexRoute
+  '/rentaler': typeof RentalerIndexRoute
+  '/farmer/bookings/$bookingId': typeof FarmerBookingsBookingIdRoute
+  '/rentaler/bookings/$bookingId': typeof RentalerBookingsBookingIdRoute
+  '/rentaler/equipment/new': typeof RentalerEquipmentNewRoute
+  '/farmer/bookings': typeof FarmerBookingsIndexRoute
+  '/rentaler/bookings': typeof RentalerBookingsIndexRoute
+  '/rentaler/equipment': typeof RentalerEquipmentIndexRoute
+  '/rentaler/equipment/$equipmentId/edit': typeof RentalerEquipmentEquipmentIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/farmer': typeof FarmerRouteWithChildren
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
+  '/rentaler': typeof RentalerRouteWithChildren
+  '/admin/bookings': typeof AdminBookingsRoute
+  '/admin/equipment': typeof AdminEquipmentRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/rentalers': typeof AdminRentalersRoute
+  '/admin/reviews': typeof AdminReviewsRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/equipment/$equipmentId': typeof EquipmentEquipmentIdRoute
+  '/farmer/notifications': typeof FarmerNotificationsRoute
+  '/farmer/payments': typeof FarmerPaymentsRoute
+  '/farmer/profile': typeof FarmerProfileRoute
+  '/farmer/wishlist': typeof FarmerWishlistRoute
+  '/rentaler/analytics': typeof RentalerAnalyticsRoute
+  '/admin/': typeof AdminIndexRoute
+  '/equipment/': typeof EquipmentIndexRoute
+  '/farmer/': typeof FarmerIndexRoute
+  '/rentaler/': typeof RentalerIndexRoute
+  '/farmer/bookings/$bookingId': typeof FarmerBookingsBookingIdRoute
+  '/rentaler/bookings/$bookingId': typeof RentalerBookingsBookingIdRoute
+  '/rentaler/equipment/new': typeof RentalerEquipmentNewRoute
+  '/farmer/bookings/': typeof FarmerBookingsIndexRoute
+  '/rentaler/bookings/': typeof RentalerBookingsIndexRoute
+  '/rentaler/equipment/': typeof RentalerEquipmentIndexRoute
+  '/rentaler/equipment/$equipmentId/edit': typeof RentalerEquipmentEquipmentIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/farmer'
+    | '/login'
+    | '/register'
+    | '/rentaler'
+    | '/admin/bookings'
+    | '/admin/equipment'
+    | '/admin/payments'
+    | '/admin/rentalers'
+    | '/admin/reviews'
+    | '/admin/users'
+    | '/equipment/$equipmentId'
+    | '/farmer/notifications'
+    | '/farmer/payments'
+    | '/farmer/profile'
+    | '/farmer/wishlist'
+    | '/rentaler/analytics'
+    | '/admin/'
+    | '/equipment/'
+    | '/farmer/'
+    | '/rentaler/'
+    | '/farmer/bookings/$bookingId'
+    | '/rentaler/bookings/$bookingId'
+    | '/rentaler/equipment/new'
+    | '/farmer/bookings/'
+    | '/rentaler/bookings/'
+    | '/rentaler/equipment/'
+    | '/rentaler/equipment/$equipmentId/edit'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/login'
+    | '/register'
+    | '/admin/bookings'
+    | '/admin/equipment'
+    | '/admin/payments'
+    | '/admin/rentalers'
+    | '/admin/reviews'
+    | '/admin/users'
+    | '/equipment/$equipmentId'
+    | '/farmer/notifications'
+    | '/farmer/payments'
+    | '/farmer/profile'
+    | '/farmer/wishlist'
+    | '/rentaler/analytics'
+    | '/admin'
+    | '/equipment'
+    | '/farmer'
+    | '/rentaler'
+    | '/farmer/bookings/$bookingId'
+    | '/rentaler/bookings/$bookingId'
+    | '/rentaler/equipment/new'
+    | '/farmer/bookings'
+    | '/rentaler/bookings'
+    | '/rentaler/equipment'
+    | '/rentaler/equipment/$equipmentId/edit'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/farmer'
+    | '/login'
+    | '/register'
+    | '/rentaler'
+    | '/admin/bookings'
+    | '/admin/equipment'
+    | '/admin/payments'
+    | '/admin/rentalers'
+    | '/admin/reviews'
+    | '/admin/users'
+    | '/equipment/$equipmentId'
+    | '/farmer/notifications'
+    | '/farmer/payments'
+    | '/farmer/profile'
+    | '/farmer/wishlist'
+    | '/rentaler/analytics'
+    | '/admin/'
+    | '/equipment/'
+    | '/farmer/'
+    | '/rentaler/'
+    | '/farmer/bookings/$bookingId'
+    | '/rentaler/bookings/$bookingId'
+    | '/rentaler/equipment/new'
+    | '/farmer/bookings/'
+    | '/rentaler/bookings/'
+    | '/rentaler/equipment/'
+    | '/rentaler/equipment/$equipmentId/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
+  FarmerRoute: typeof FarmerRouteWithChildren
+  LoginRoute: typeof LoginRoute
+  RegisterRoute: typeof RegisterRoute
+  RentalerRoute: typeof RentalerRouteWithChildren
+  EquipmentEquipmentIdRoute: typeof EquipmentEquipmentIdRoute
+  EquipmentIndexRoute: typeof EquipmentIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,22 +391,284 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/farmer': {
+      id: '/farmer'
+      path: '/farmer'
+      fullPath: '/farmer'
+      preLoaderRoute: typeof FarmerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rentaler': {
+      id: '/rentaler'
+      path: '/rentaler'
+      fullPath: '/rentaler'
+      preLoaderRoute: typeof RentalerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/bookings': {
+      id: '/admin/bookings'
+      path: '/bookings'
+      fullPath: '/admin/bookings'
+      preLoaderRoute: typeof AdminBookingsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/equipment': {
+      id: '/admin/equipment'
+      path: '/equipment'
+      fullPath: '/admin/equipment'
+      preLoaderRoute: typeof AdminEquipmentRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/payments': {
+      id: '/admin/payments'
+      path: '/payments'
+      fullPath: '/admin/payments'
+      preLoaderRoute: typeof AdminPaymentsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/rentalers': {
+      id: '/admin/rentalers'
+      path: '/rentalers'
+      fullPath: '/admin/rentalers'
+      preLoaderRoute: typeof AdminRentalersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/reviews': {
+      id: '/admin/reviews'
+      path: '/reviews'
+      fullPath: '/admin/reviews'
+      preLoaderRoute: typeof AdminReviewsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/equipment/': {
+      id: '/equipment/'
+      path: '/equipment'
+      fullPath: '/equipment/'
+      preLoaderRoute: typeof EquipmentIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/equipment/$equipmentId': {
+      id: '/equipment/$equipmentId'
+      path: '/equipment/$equipmentId'
+      fullPath: '/equipment/$equipmentId'
+      preLoaderRoute: typeof EquipmentEquipmentIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/farmer/': {
+      id: '/farmer/'
+      path: '/'
+      fullPath: '/farmer/'
+      preLoaderRoute: typeof FarmerIndexRouteImport
+      parentRoute: typeof FarmerRoute
+    }
+    '/farmer/notifications': {
+      id: '/farmer/notifications'
+      path: '/notifications'
+      fullPath: '/farmer/notifications'
+      preLoaderRoute: typeof FarmerNotificationsRouteImport
+      parentRoute: typeof FarmerRoute
+    }
+    '/farmer/payments': {
+      id: '/farmer/payments'
+      path: '/payments'
+      fullPath: '/farmer/payments'
+      preLoaderRoute: typeof FarmerPaymentsRouteImport
+      parentRoute: typeof FarmerRoute
+    }
+    '/farmer/profile': {
+      id: '/farmer/profile'
+      path: '/profile'
+      fullPath: '/farmer/profile'
+      preLoaderRoute: typeof FarmerProfileRouteImport
+      parentRoute: typeof FarmerRoute
+    }
+    '/farmer/wishlist': {
+      id: '/farmer/wishlist'
+      path: '/wishlist'
+      fullPath: '/farmer/wishlist'
+      preLoaderRoute: typeof FarmerWishlistRouteImport
+      parentRoute: typeof FarmerRoute
+    }
+    '/rentaler/': {
+      id: '/rentaler/'
+      path: '/'
+      fullPath: '/rentaler/'
+      preLoaderRoute: typeof RentalerIndexRouteImport
+      parentRoute: typeof RentalerRoute
+    }
+    '/rentaler/analytics': {
+      id: '/rentaler/analytics'
+      path: '/analytics'
+      fullPath: '/rentaler/analytics'
+      preLoaderRoute: typeof RentalerAnalyticsRouteImport
+      parentRoute: typeof RentalerRoute
+    }
+    '/farmer/bookings/': {
+      id: '/farmer/bookings/'
+      path: '/bookings'
+      fullPath: '/farmer/bookings/'
+      preLoaderRoute: typeof FarmerBookingsIndexRouteImport
+      parentRoute: typeof FarmerRoute
+    }
+    '/farmer/bookings/$bookingId': {
+      id: '/farmer/bookings/$bookingId'
+      path: '/bookings/$bookingId'
+      fullPath: '/farmer/bookings/$bookingId'
+      preLoaderRoute: typeof FarmerBookingsBookingIdRouteImport
+      parentRoute: typeof FarmerRoute
+    }
+    '/rentaler/bookings/': {
+      id: '/rentaler/bookings/'
+      path: '/bookings'
+      fullPath: '/rentaler/bookings/'
+      preLoaderRoute: typeof RentalerBookingsIndexRouteImport
+      parentRoute: typeof RentalerRoute
+    }
+    '/rentaler/bookings/$bookingId': {
+      id: '/rentaler/bookings/$bookingId'
+      path: '/bookings/$bookingId'
+      fullPath: '/rentaler/bookings/$bookingId'
+      preLoaderRoute: typeof RentalerBookingsBookingIdRouteImport
+      parentRoute: typeof RentalerRoute
+    }
+    '/rentaler/equipment/': {
+      id: '/rentaler/equipment/'
+      path: '/equipment'
+      fullPath: '/rentaler/equipment/'
+      preLoaderRoute: typeof RentalerEquipmentIndexRouteImport
+      parentRoute: typeof RentalerRoute
+    }
+    '/rentaler/equipment/new': {
+      id: '/rentaler/equipment/new'
+      path: '/equipment/new'
+      fullPath: '/rentaler/equipment/new'
+      preLoaderRoute: typeof RentalerEquipmentNewRouteImport
+      parentRoute: typeof RentalerRoute
+    }
+    '/rentaler/equipment/$equipmentId/edit': {
+      id: '/rentaler/equipment/$equipmentId/edit'
+      path: '/equipment/$equipmentId/edit'
+      fullPath: '/rentaler/equipment/$equipmentId/edit'
+      preLoaderRoute: typeof RentalerEquipmentEquipmentIdEditRouteImport
+      parentRoute: typeof RentalerRoute
+    }
   }
 }
 
+interface AdminRouteChildren {
+  AdminBookingsRoute: typeof AdminBookingsRoute
+  AdminEquipmentRoute: typeof AdminEquipmentRoute
+  AdminPaymentsRoute: typeof AdminPaymentsRoute
+  AdminRentalersRoute: typeof AdminRentalersRoute
+  AdminReviewsRoute: typeof AdminReviewsRoute
+  AdminUsersRoute: typeof AdminUsersRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminBookingsRoute: AdminBookingsRoute,
+  AdminEquipmentRoute: AdminEquipmentRoute,
+  AdminPaymentsRoute: AdminPaymentsRoute,
+  AdminRentalersRoute: AdminRentalersRoute,
+  AdminReviewsRoute: AdminReviewsRoute,
+  AdminUsersRoute: AdminUsersRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
+interface FarmerRouteChildren {
+  FarmerNotificationsRoute: typeof FarmerNotificationsRoute
+  FarmerPaymentsRoute: typeof FarmerPaymentsRoute
+  FarmerProfileRoute: typeof FarmerProfileRoute
+  FarmerWishlistRoute: typeof FarmerWishlistRoute
+  FarmerIndexRoute: typeof FarmerIndexRoute
+  FarmerBookingsBookingIdRoute: typeof FarmerBookingsBookingIdRoute
+  FarmerBookingsIndexRoute: typeof FarmerBookingsIndexRoute
+}
+
+const FarmerRouteChildren: FarmerRouteChildren = {
+  FarmerNotificationsRoute: FarmerNotificationsRoute,
+  FarmerPaymentsRoute: FarmerPaymentsRoute,
+  FarmerProfileRoute: FarmerProfileRoute,
+  FarmerWishlistRoute: FarmerWishlistRoute,
+  FarmerIndexRoute: FarmerIndexRoute,
+  FarmerBookingsBookingIdRoute: FarmerBookingsBookingIdRoute,
+  FarmerBookingsIndexRoute: FarmerBookingsIndexRoute,
+}
+
+const FarmerRouteWithChildren =
+  FarmerRoute._addFileChildren(FarmerRouteChildren)
+
+interface RentalerRouteChildren {
+  RentalerAnalyticsRoute: typeof RentalerAnalyticsRoute
+  RentalerIndexRoute: typeof RentalerIndexRoute
+  RentalerBookingsBookingIdRoute: typeof RentalerBookingsBookingIdRoute
+  RentalerEquipmentNewRoute: typeof RentalerEquipmentNewRoute
+  RentalerBookingsIndexRoute: typeof RentalerBookingsIndexRoute
+  RentalerEquipmentIndexRoute: typeof RentalerEquipmentIndexRoute
+  RentalerEquipmentEquipmentIdEditRoute: typeof RentalerEquipmentEquipmentIdEditRoute
+}
+
+const RentalerRouteChildren: RentalerRouteChildren = {
+  RentalerAnalyticsRoute: RentalerAnalyticsRoute,
+  RentalerIndexRoute: RentalerIndexRoute,
+  RentalerBookingsBookingIdRoute: RentalerBookingsBookingIdRoute,
+  RentalerEquipmentNewRoute: RentalerEquipmentNewRoute,
+  RentalerBookingsIndexRoute: RentalerBookingsIndexRoute,
+  RentalerEquipmentIndexRoute: RentalerEquipmentIndexRoute,
+  RentalerEquipmentEquipmentIdEditRoute: RentalerEquipmentEquipmentIdEditRoute,
+}
+
+const RentalerRouteWithChildren = RentalerRoute._addFileChildren(
+  RentalerRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
+  FarmerRoute: FarmerRouteWithChildren,
+  LoginRoute: LoginRoute,
+  RegisterRoute: RegisterRoute,
+  RentalerRoute: RentalerRouteWithChildren,
+  EquipmentEquipmentIdRoute: EquipmentEquipmentIdRoute,
+  EquipmentIndexRoute: EquipmentIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
