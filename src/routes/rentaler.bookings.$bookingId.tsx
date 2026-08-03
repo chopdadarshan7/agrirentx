@@ -49,8 +49,7 @@ function RentalerBookingDetail() {
               ["Rental window", `${booking.from} – ${booking.to}`],
               ["Duration", `${booking.days} day${booking.days > 1 ? "s" : ""}`],
               ["Rental amount", inr(booking.amount)],
-              ["Deposit", inr(booking.deposit)],
-              ["Delivery", booking.delivery],
+              ["Booking ID", booking.id],
               ["Booked on", booking.placedAt],
             ].map(([k, v]) => (
               <div key={k}>
