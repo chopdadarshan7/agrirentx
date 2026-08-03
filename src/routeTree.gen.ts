@@ -24,6 +24,7 @@ import { Route as FarmerWishlistRouteImport } from './routes/farmer.wishlist'
 import { Route as RentalerIndexRouteImport } from './routes/rentaler.index'
 import { Route as FarmerBookingsIndexRouteImport } from './routes/farmer.bookings.index'
 import { Route as FarmerBookingsBookingIdRouteImport } from './routes/farmer.bookings.$bookingId'
+import { Route as RentalerEquipmentIndexRouteImport } from './routes/rentaler.equipment.index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -100,6 +101,11 @@ const FarmerBookingsBookingIdRoute = FarmerBookingsBookingIdRouteImport.update({
   path: '/bookings/$bookingId',
   getParentRoute: () => FarmerRoute,
 } as any)
+const RentalerEquipmentIndexRoute = RentalerEquipmentIndexRouteImport.update({
+  id: '/equipment/',
+  path: '/equipment/',
+  getParentRoute: () => RentalerRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -117,6 +123,7 @@ export interface FileRoutesByFullPath {
   '/rentaler/': typeof RentalerIndexRoute
   '/farmer/bookings/$bookingId': typeof FarmerBookingsBookingIdRoute
   '/farmer/bookings/': typeof FarmerBookingsIndexRoute
+  '/rentaler/equipment/': typeof RentalerEquipmentIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -132,6 +139,7 @@ export interface FileRoutesByTo {
   '/rentaler': typeof RentalerIndexRoute
   '/farmer/bookings/$bookingId': typeof FarmerBookingsBookingIdRoute
   '/farmer/bookings': typeof FarmerBookingsIndexRoute
+  '/rentaler/equipment': typeof RentalerEquipmentIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -150,6 +158,7 @@ export interface FileRoutesById {
   '/rentaler/': typeof RentalerIndexRoute
   '/farmer/bookings/$bookingId': typeof FarmerBookingsBookingIdRoute
   '/farmer/bookings/': typeof FarmerBookingsIndexRoute
+  '/rentaler/equipment/': typeof RentalerEquipmentIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -169,6 +178,7 @@ export interface FileRouteTypes {
     | '/rentaler/'
     | '/farmer/bookings/$bookingId'
     | '/farmer/bookings/'
+    | '/rentaler/equipment/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -184,6 +194,7 @@ export interface FileRouteTypes {
     | '/rentaler'
     | '/farmer/bookings/$bookingId'
     | '/farmer/bookings'
+    | '/rentaler/equipment'
   id:
     | '__root__'
     | '/'
@@ -201,6 +212,7 @@ export interface FileRouteTypes {
     | '/rentaler/'
     | '/farmer/bookings/$bookingId'
     | '/farmer/bookings/'
+    | '/rentaler/equipment/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -320,6 +332,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FarmerBookingsBookingIdRouteImport
       parentRoute: typeof FarmerRoute
     }
+    '/rentaler/equipment/': {
+      id: '/rentaler/equipment/'
+      path: '/equipment'
+      fullPath: '/rentaler/equipment/'
+      preLoaderRoute: typeof RentalerEquipmentIndexRouteImport
+      parentRoute: typeof RentalerRoute
+    }
   }
 }
 
@@ -348,10 +367,12 @@ const FarmerRouteWithChildren =
 
 interface RentalerRouteChildren {
   RentalerIndexRoute: typeof RentalerIndexRoute
+  RentalerEquipmentIndexRoute: typeof RentalerEquipmentIndexRoute
 }
 
 const RentalerRouteChildren: RentalerRouteChildren = {
   RentalerIndexRoute: RentalerIndexRoute,
+  RentalerEquipmentIndexRoute: RentalerEquipmentIndexRoute,
 }
 
 const RentalerRouteWithChildren = RentalerRoute._addFileChildren(
