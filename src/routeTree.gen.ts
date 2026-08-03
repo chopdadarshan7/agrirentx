@@ -16,6 +16,7 @@ import { Route as RegisterRouteImport } from './routes/register'
 import { Route as EquipmentIndexRouteImport } from './routes/equipment.index'
 import { Route as EquipmentEquipmentIdRouteImport } from './routes/equipment.$equipmentId'
 import { Route as FarmerIndexRouteImport } from './routes/farmer.index'
+import { Route as FarmerPaymentsRouteImport } from './routes/farmer.payments'
 import { Route as FarmerWishlistRouteImport } from './routes/farmer.wishlist'
 import { Route as FarmerBookingsIndexRouteImport } from './routes/farmer.bookings.index'
 import { Route as FarmerBookingsBookingIdRouteImport } from './routes/farmer.bookings.$bookingId'
@@ -55,6 +56,11 @@ const FarmerIndexRoute = FarmerIndexRouteImport.update({
   path: '/',
   getParentRoute: () => FarmerRoute,
 } as any)
+const FarmerPaymentsRoute = FarmerPaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => FarmerRoute,
+} as any)
 const FarmerWishlistRoute = FarmerWishlistRouteImport.update({
   id: '/wishlist',
   path: '/wishlist',
@@ -77,6 +83,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/equipment/$equipmentId': typeof EquipmentEquipmentIdRoute
+  '/farmer/payments': typeof FarmerPaymentsRoute
   '/farmer/wishlist': typeof FarmerWishlistRoute
   '/equipment/': typeof EquipmentIndexRoute
   '/farmer/': typeof FarmerIndexRoute
@@ -88,6 +95,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/equipment/$equipmentId': typeof EquipmentEquipmentIdRoute
+  '/farmer/payments': typeof FarmerPaymentsRoute
   '/farmer/wishlist': typeof FarmerWishlistRoute
   '/equipment': typeof EquipmentIndexRoute
   '/farmer': typeof FarmerIndexRoute
@@ -101,6 +109,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/equipment/$equipmentId': typeof EquipmentEquipmentIdRoute
+  '/farmer/payments': typeof FarmerPaymentsRoute
   '/farmer/wishlist': typeof FarmerWishlistRoute
   '/equipment/': typeof EquipmentIndexRoute
   '/farmer/': typeof FarmerIndexRoute
@@ -115,6 +124,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/equipment/$equipmentId'
+    | '/farmer/payments'
     | '/farmer/wishlist'
     | '/equipment/'
     | '/farmer/'
@@ -126,6 +136,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/equipment/$equipmentId'
+    | '/farmer/payments'
     | '/farmer/wishlist'
     | '/equipment'
     | '/farmer'
@@ -138,6 +149,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/equipment/$equipmentId'
+    | '/farmer/payments'
     | '/farmer/wishlist'
     | '/equipment/'
     | '/farmer/'
@@ -205,6 +217,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FarmerIndexRouteImport
       parentRoute: typeof FarmerRoute
     }
+    '/farmer/payments': {
+      id: '/farmer/payments'
+      path: '/payments'
+      fullPath: '/farmer/payments'
+      preLoaderRoute: typeof FarmerPaymentsRouteImport
+      parentRoute: typeof FarmerRoute
+    }
     '/farmer/wishlist': {
       id: '/farmer/wishlist'
       path: '/wishlist'
@@ -230,6 +249,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface FarmerRouteChildren {
+  FarmerPaymentsRoute: typeof FarmerPaymentsRoute
   FarmerWishlistRoute: typeof FarmerWishlistRoute
   FarmerIndexRoute: typeof FarmerIndexRoute
   FarmerBookingsBookingIdRoute: typeof FarmerBookingsBookingIdRoute
@@ -237,6 +257,7 @@ interface FarmerRouteChildren {
 }
 
 const FarmerRouteChildren: FarmerRouteChildren = {
+  FarmerPaymentsRoute: FarmerPaymentsRoute,
   FarmerWishlistRoute: FarmerWishlistRoute,
   FarmerIndexRoute: FarmerIndexRoute,
   FarmerBookingsBookingIdRoute: FarmerBookingsBookingIdRoute,
