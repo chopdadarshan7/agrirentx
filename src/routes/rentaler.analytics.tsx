@@ -29,7 +29,7 @@ function RentalerAnalyticsPage() {
     revenue: paid.filter((b) => b.equipmentTitle === e.title).reduce((s, b) => s + b.amount, 0),
   }));
 
-  const statusSplit = ["completed", "ongoing", "approved", "cancelled"].map((s) => ({
+  const statusSplit = ["completed", "active", "confirmed", "cancelled"].map((s) => ({
     name: s,
     value: mine.filter((b) => b.status === s).length,
   })).filter((d) => d.value > 0);
