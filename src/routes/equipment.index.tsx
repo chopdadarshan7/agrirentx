@@ -45,7 +45,7 @@ const states = ["All states", "Maharashtra", "Punjab", "Madhya Pradesh", "Andhra
 function EquipmentListPage() {
   const { category } = Route.useSearch();
   const [query, setQuery] = useState("");
-  const [cat, setCat] = useState(category ?? "all");
+  const [cat, setCat] = useState(category);
   const [state, setState] = useState("All states");
   const [maxPrice, setMaxPrice] = useState(12000);
   const [loading] = useState(false);
