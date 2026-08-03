@@ -16,11 +16,11 @@ import {
 import { Slider } from "@/components/ui/slider";
 import { categories, equipments, inr } from "@/lib/data";
 
-type Search = { category?: string };
+type Search = { category: string };
 
 export const Route = createFileRoute("/equipment/")({
   validateSearch: (search: Record<string, unknown>): Search => ({
-    category: typeof search.category === "string" ? search.category : undefined,
+    category: typeof search["category"] === "string" ? search["category"] : "all",
   }),
   head: () => ({
     meta: [
