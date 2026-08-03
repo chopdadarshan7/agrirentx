@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as EquipmentIndexRouteImport } from './routes/equipment.index'
+import { Route as EquipmentEquipmentIdRouteImport } from './routes/equipment.$equipmentId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -34,17 +35,24 @@ const EquipmentIndexRoute = EquipmentIndexRouteImport.update({
   path: '/equipment/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EquipmentEquipmentIdRoute = EquipmentEquipmentIdRouteImport.update({
+  id: '/equipment/$equipmentId',
+  path: '/equipment/$equipmentId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/equipment/$equipmentId': typeof EquipmentEquipmentIdRoute
   '/equipment/': typeof EquipmentIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/equipment/$equipmentId': typeof EquipmentEquipmentIdRoute
   '/equipment': typeof EquipmentIndexRoute
 }
 export interface FileRoutesById {
@@ -52,20 +60,29 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/equipment/$equipmentId': typeof EquipmentEquipmentIdRoute
   '/equipment/': typeof EquipmentIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/register' | '/equipment/'
+  fullPaths:
+    '/' | '/login' | '/register' | '/equipment/$equipmentId' | '/equipment/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/register' | '/equipment'
-  id: '__root__' | '/' | '/login' | '/register' | '/equipment/'
+  to: '/' | '/login' | '/register' | '/equipment/$equipmentId' | '/equipment'
+  id:
+    | '__root__'
+    | '/'
+    | '/login'
+    | '/register'
+    | '/equipment/$equipmentId'
+    | '/equipment/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
+  EquipmentEquipmentIdRoute: typeof EquipmentEquipmentIdRoute
   EquipmentIndexRoute: typeof EquipmentIndexRoute
 }
 
@@ -99,6 +116,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EquipmentIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/equipment/$equipmentId': {
+      id: '/equipment/$equipmentId'
+      path: '/equipment/$equipmentId'
+      fullPath: '/equipment/$equipmentId'
+      preLoaderRoute: typeof EquipmentEquipmentIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -106,6 +130,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
+  EquipmentEquipmentIdRoute: EquipmentEquipmentIdRoute,
   EquipmentIndexRoute: EquipmentIndexRoute,
 }
 export const routeTree = rootRouteImport

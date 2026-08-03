@@ -84,7 +84,7 @@ function EquipmentDetailsPage() {
                 Specifications
               </h2>
               <dl className="divide-y divide-border">
-                {item.specs.map((s) => (
+                {item.specs.map((s: { label: string; value: string }) => (
                   <div key={s.label} className="flex justify-between gap-4 px-5 py-3 text-sm">
                     <dt className="text-muted-foreground">{s.label}</dt>
                     <dd className="font-medium">{s.value}</dd>
