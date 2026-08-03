@@ -35,7 +35,7 @@ export function EquipmentForm({ equipment }: { equipment?: Equipment }) {
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="category">Category</Label>
-            <Select defaultValue={equipment?.category ?? categories[0]?.slug}>
+            <Select defaultValue={equipment?.category ?? categories[0]?.slug ?? ""}>
               <SelectTrigger id="category">
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
