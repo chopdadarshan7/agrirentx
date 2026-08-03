@@ -11,7 +11,7 @@ import {
 import { DashboardShell } from "@/components/DashboardShell";
 
 export const Route = createFileRoute("/admin")({
-  component: AdminLayout;
+  component: AdminLayout,
 });
 
 function AdminLayout() {
