@@ -18,6 +18,7 @@ import { Route as EquipmentEquipmentIdRouteImport } from './routes/equipment.$eq
 import { Route as FarmerIndexRouteImport } from './routes/farmer.index'
 import { Route as FarmerNotificationsRouteImport } from './routes/farmer.notifications'
 import { Route as FarmerPaymentsRouteImport } from './routes/farmer.payments'
+import { Route as FarmerProfileRouteImport } from './routes/farmer.profile'
 import { Route as FarmerWishlistRouteImport } from './routes/farmer.wishlist'
 import { Route as FarmerBookingsIndexRouteImport } from './routes/farmer.bookings.index'
 import { Route as FarmerBookingsBookingIdRouteImport } from './routes/farmer.bookings.$bookingId'
@@ -67,6 +68,11 @@ const FarmerPaymentsRoute = FarmerPaymentsRouteImport.update({
   path: '/payments',
   getParentRoute: () => FarmerRoute,
 } as any)
+const FarmerProfileRoute = FarmerProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => FarmerRoute,
+} as any)
 const FarmerWishlistRoute = FarmerWishlistRouteImport.update({
   id: '/wishlist',
   path: '/wishlist',
@@ -91,6 +97,7 @@ export interface FileRoutesByFullPath {
   '/equipment/$equipmentId': typeof EquipmentEquipmentIdRoute
   '/farmer/notifications': typeof FarmerNotificationsRoute
   '/farmer/payments': typeof FarmerPaymentsRoute
+  '/farmer/profile': typeof FarmerProfileRoute
   '/farmer/wishlist': typeof FarmerWishlistRoute
   '/equipment/': typeof EquipmentIndexRoute
   '/farmer/': typeof FarmerIndexRoute
@@ -104,6 +111,7 @@ export interface FileRoutesByTo {
   '/equipment/$equipmentId': typeof EquipmentEquipmentIdRoute
   '/farmer/notifications': typeof FarmerNotificationsRoute
   '/farmer/payments': typeof FarmerPaymentsRoute
+  '/farmer/profile': typeof FarmerProfileRoute
   '/farmer/wishlist': typeof FarmerWishlistRoute
   '/equipment': typeof EquipmentIndexRoute
   '/farmer': typeof FarmerIndexRoute
@@ -119,6 +127,7 @@ export interface FileRoutesById {
   '/equipment/$equipmentId': typeof EquipmentEquipmentIdRoute
   '/farmer/notifications': typeof FarmerNotificationsRoute
   '/farmer/payments': typeof FarmerPaymentsRoute
+  '/farmer/profile': typeof FarmerProfileRoute
   '/farmer/wishlist': typeof FarmerWishlistRoute
   '/equipment/': typeof EquipmentIndexRoute
   '/farmer/': typeof FarmerIndexRoute
@@ -135,6 +144,7 @@ export interface FileRouteTypes {
     | '/equipment/$equipmentId'
     | '/farmer/notifications'
     | '/farmer/payments'
+    | '/farmer/profile'
     | '/farmer/wishlist'
     | '/equipment/'
     | '/farmer/'
@@ -148,6 +158,7 @@ export interface FileRouteTypes {
     | '/equipment/$equipmentId'
     | '/farmer/notifications'
     | '/farmer/payments'
+    | '/farmer/profile'
     | '/farmer/wishlist'
     | '/equipment'
     | '/farmer'
@@ -162,6 +173,7 @@ export interface FileRouteTypes {
     | '/equipment/$equipmentId'
     | '/farmer/notifications'
     | '/farmer/payments'
+    | '/farmer/profile'
     | '/farmer/wishlist'
     | '/equipment/'
     | '/farmer/'
@@ -243,6 +255,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FarmerPaymentsRouteImport
       parentRoute: typeof FarmerRoute
     }
+    '/farmer/profile': {
+      id: '/farmer/profile'
+      path: '/profile'
+      fullPath: '/farmer/profile'
+      preLoaderRoute: typeof FarmerProfileRouteImport
+      parentRoute: typeof FarmerRoute
+    }
     '/farmer/wishlist': {
       id: '/farmer/wishlist'
       path: '/wishlist'
@@ -270,6 +289,7 @@ declare module '@tanstack/react-router' {
 interface FarmerRouteChildren {
   FarmerNotificationsRoute: typeof FarmerNotificationsRoute
   FarmerPaymentsRoute: typeof FarmerPaymentsRoute
+  FarmerProfileRoute: typeof FarmerProfileRoute
   FarmerWishlistRoute: typeof FarmerWishlistRoute
   FarmerIndexRoute: typeof FarmerIndexRoute
   FarmerBookingsBookingIdRoute: typeof FarmerBookingsBookingIdRoute
@@ -279,6 +299,7 @@ interface FarmerRouteChildren {
 const FarmerRouteChildren: FarmerRouteChildren = {
   FarmerNotificationsRoute: FarmerNotificationsRoute,
   FarmerPaymentsRoute: FarmerPaymentsRoute,
+  FarmerProfileRoute: FarmerProfileRoute,
   FarmerWishlistRoute: FarmerWishlistRoute,
   FarmerIndexRoute: FarmerIndexRoute,
   FarmerBookingsBookingIdRoute: FarmerBookingsBookingIdRoute,
