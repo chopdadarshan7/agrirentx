@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as FarmerRouteImport } from './routes/farmer'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as RegisterRouteImport } from './routes/register'
+import { Route as RentalerRouteImport } from './routes/rentaler'
 import { Route as EquipmentIndexRouteImport } from './routes/equipment.index'
 import { Route as EquipmentEquipmentIdRouteImport } from './routes/equipment.$equipmentId'
 import { Route as FarmerIndexRouteImport } from './routes/farmer.index'
@@ -41,6 +42,11 @@ const LoginRoute = LoginRouteImport.update({
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
   path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RentalerRoute = RentalerRouteImport.update({
+  id: '/rentaler',
+  path: '/rentaler',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EquipmentIndexRoute = EquipmentIndexRouteImport.update({
@@ -94,6 +100,7 @@ export interface FileRoutesByFullPath {
   '/farmer': typeof FarmerRouteWithChildren
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/rentaler': typeof RentalerRoute
   '/equipment/$equipmentId': typeof EquipmentEquipmentIdRoute
   '/farmer/notifications': typeof FarmerNotificationsRoute
   '/farmer/payments': typeof FarmerPaymentsRoute
@@ -108,6 +115,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/rentaler': typeof RentalerRoute
   '/equipment/$equipmentId': typeof EquipmentEquipmentIdRoute
   '/farmer/notifications': typeof FarmerNotificationsRoute
   '/farmer/payments': typeof FarmerPaymentsRoute
@@ -124,6 +132,7 @@ export interface FileRoutesById {
   '/farmer': typeof FarmerRouteWithChildren
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/rentaler': typeof RentalerRoute
   '/equipment/$equipmentId': typeof EquipmentEquipmentIdRoute
   '/farmer/notifications': typeof FarmerNotificationsRoute
   '/farmer/payments': typeof FarmerPaymentsRoute
@@ -141,6 +150,7 @@ export interface FileRouteTypes {
     | '/farmer'
     | '/login'
     | '/register'
+    | '/rentaler'
     | '/equipment/$equipmentId'
     | '/farmer/notifications'
     | '/farmer/payments'
@@ -155,6 +165,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/register'
+    | '/rentaler'
     | '/equipment/$equipmentId'
     | '/farmer/notifications'
     | '/farmer/payments'
@@ -170,6 +181,7 @@ export interface FileRouteTypes {
     | '/farmer'
     | '/login'
     | '/register'
+    | '/rentaler'
     | '/equipment/$equipmentId'
     | '/farmer/notifications'
     | '/farmer/payments'
@@ -186,6 +198,7 @@ export interface RootRouteChildren {
   FarmerRoute: typeof FarmerRouteWithChildren
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
+  RentalerRoute: typeof RentalerRoute
   EquipmentEquipmentIdRoute: typeof EquipmentEquipmentIdRoute
   EquipmentIndexRoute: typeof EquipmentIndexRoute
 }
@@ -218,6 +231,13 @@ declare module '@tanstack/react-router' {
       path: '/register'
       fullPath: '/register'
       preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rentaler': {
+      id: '/rentaler'
+      path: '/rentaler'
+      fullPath: '/rentaler'
+      preLoaderRoute: typeof RentalerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/equipment/': {
@@ -314,6 +334,7 @@ const rootRouteChildren: RootRouteChildren = {
   FarmerRoute: FarmerRouteWithChildren,
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
+  RentalerRoute: RentalerRoute,
   EquipmentEquipmentIdRoute: EquipmentEquipmentIdRoute,
   EquipmentIndexRoute: EquipmentIndexRoute,
 }
