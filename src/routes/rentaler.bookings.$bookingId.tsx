@@ -63,10 +63,10 @@ function RentalerBookingDetail() {
         <div className="space-y-6">
           <SectionCard title="Renter">
             <p className="text-sm font-medium">{booking.farmer}</p>
-            <p className="text-sm text-muted-foreground">{booking.farmerLocation}</p>
+            <p className="text-sm text-muted-foreground">Rented {booking.equipmentTitle}</p>
             <Button variant="outline" size="sm" className="mt-3">
               <Phone className="size-4" />
-              {booking.farmerPhone}
+              Contact renter
             </Button>
           </SectionCard>
 
