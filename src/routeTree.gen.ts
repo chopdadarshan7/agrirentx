@@ -16,6 +16,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as RentalerRouteImport } from './routes/rentaler'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminRentalersRouteImport } from './routes/admin.rentalers'
 import { Route as EquipmentIndexRouteImport } from './routes/equipment.index'
 import { Route as EquipmentEquipmentIdRouteImport } from './routes/equipment.$equipmentId'
 import { Route as FarmerIndexRouteImport } from './routes/farmer.index'
@@ -66,6 +67,11 @@ const RentalerRoute = RentalerRouteImport.update({
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminRentalersRoute = AdminRentalersRouteImport.update({
+  id: '/rentalers',
+  path: '/rentalers',
   getParentRoute: () => AdminRoute,
 } as any)
 const EquipmentIndexRoute = EquipmentIndexRouteImport.update({
@@ -158,6 +164,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/rentaler': typeof RentalerRouteWithChildren
+  '/admin/rentalers': typeof AdminRentalersRoute
   '/equipment/$equipmentId': typeof EquipmentEquipmentIdRoute
   '/farmer/notifications': typeof FarmerNotificationsRoute
   '/farmer/payments': typeof FarmerPaymentsRoute
@@ -180,6 +187,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/admin/rentalers': typeof AdminRentalersRoute
   '/equipment/$equipmentId': typeof EquipmentEquipmentIdRoute
   '/farmer/notifications': typeof FarmerNotificationsRoute
   '/farmer/payments': typeof FarmerPaymentsRoute
@@ -206,6 +214,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/rentaler': typeof RentalerRouteWithChildren
+  '/admin/rentalers': typeof AdminRentalersRoute
   '/equipment/$equipmentId': typeof EquipmentEquipmentIdRoute
   '/farmer/notifications': typeof FarmerNotificationsRoute
   '/farmer/payments': typeof FarmerPaymentsRoute
@@ -233,6 +242,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/rentaler'
+    | '/admin/rentalers'
     | '/equipment/$equipmentId'
     | '/farmer/notifications'
     | '/farmer/payments'
@@ -255,6 +265,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/register'
+    | '/admin/rentalers'
     | '/equipment/$equipmentId'
     | '/farmer/notifications'
     | '/farmer/payments'
@@ -280,6 +291,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/rentaler'
+    | '/admin/rentalers'
     | '/equipment/$equipmentId'
     | '/farmer/notifications'
     | '/farmer/payments'
@@ -359,6 +371,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/rentalers': {
+      id: '/admin/rentalers'
+      path: '/rentalers'
+      fullPath: '/admin/rentalers'
+      preLoaderRoute: typeof AdminRentalersRouteImport
       parentRoute: typeof AdminRoute
     }
     '/equipment/': {
@@ -477,10 +496,12 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminRouteChildren {
+  AdminRentalersRoute: typeof AdminRentalersRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminRentalersRoute: AdminRentalersRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 
