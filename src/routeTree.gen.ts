@@ -26,6 +26,7 @@ import { Route as FarmerBookingsIndexRouteImport } from './routes/farmer.booking
 import { Route as FarmerBookingsBookingIdRouteImport } from './routes/farmer.bookings.$bookingId'
 import { Route as RentalerEquipmentIndexRouteImport } from './routes/rentaler.equipment.index'
 import { Route as RentalerEquipmentNewRouteImport } from './routes/rentaler.equipment.new'
+import { Route as RentalerEquipmentEquipmentIdEditRouteImport } from './routes/rentaler.equipment.$equipmentId.edit'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -112,6 +113,12 @@ const RentalerEquipmentNewRoute = RentalerEquipmentNewRouteImport.update({
   path: '/equipment/new',
   getParentRoute: () => RentalerRoute,
 } as any)
+const RentalerEquipmentEquipmentIdEditRoute =
+  RentalerEquipmentEquipmentIdEditRouteImport.update({
+    id: '/equipment/$equipmentId/edit',
+    path: '/equipment/$equipmentId/edit',
+    getParentRoute: () => RentalerRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -131,6 +138,7 @@ export interface FileRoutesByFullPath {
   '/rentaler/equipment/new': typeof RentalerEquipmentNewRoute
   '/farmer/bookings/': typeof FarmerBookingsIndexRoute
   '/rentaler/equipment/': typeof RentalerEquipmentIndexRoute
+  '/rentaler/equipment/$equipmentId/edit': typeof RentalerEquipmentEquipmentIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -148,6 +156,7 @@ export interface FileRoutesByTo {
   '/rentaler/equipment/new': typeof RentalerEquipmentNewRoute
   '/farmer/bookings': typeof FarmerBookingsIndexRoute
   '/rentaler/equipment': typeof RentalerEquipmentIndexRoute
+  '/rentaler/equipment/$equipmentId/edit': typeof RentalerEquipmentEquipmentIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -168,6 +177,7 @@ export interface FileRoutesById {
   '/rentaler/equipment/new': typeof RentalerEquipmentNewRoute
   '/farmer/bookings/': typeof FarmerBookingsIndexRoute
   '/rentaler/equipment/': typeof RentalerEquipmentIndexRoute
+  '/rentaler/equipment/$equipmentId/edit': typeof RentalerEquipmentEquipmentIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -189,6 +199,7 @@ export interface FileRouteTypes {
     | '/rentaler/equipment/new'
     | '/farmer/bookings/'
     | '/rentaler/equipment/'
+    | '/rentaler/equipment/$equipmentId/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -206,6 +217,7 @@ export interface FileRouteTypes {
     | '/rentaler/equipment/new'
     | '/farmer/bookings'
     | '/rentaler/equipment'
+    | '/rentaler/equipment/$equipmentId/edit'
   id:
     | '__root__'
     | '/'
@@ -225,6 +237,7 @@ export interface FileRouteTypes {
     | '/rentaler/equipment/new'
     | '/farmer/bookings/'
     | '/rentaler/equipment/'
+    | '/rentaler/equipment/$equipmentId/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -358,6 +371,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RentalerEquipmentNewRouteImport
       parentRoute: typeof RentalerRoute
     }
+    '/rentaler/equipment/$equipmentId/edit': {
+      id: '/rentaler/equipment/$equipmentId/edit'
+      path: '/equipment/$equipmentId/edit'
+      fullPath: '/rentaler/equipment/$equipmentId/edit'
+      preLoaderRoute: typeof RentalerEquipmentEquipmentIdEditRouteImport
+      parentRoute: typeof RentalerRoute
+    }
   }
 }
 
@@ -388,12 +408,14 @@ interface RentalerRouteChildren {
   RentalerIndexRoute: typeof RentalerIndexRoute
   RentalerEquipmentNewRoute: typeof RentalerEquipmentNewRoute
   RentalerEquipmentIndexRoute: typeof RentalerEquipmentIndexRoute
+  RentalerEquipmentEquipmentIdEditRoute: typeof RentalerEquipmentEquipmentIdEditRoute
 }
 
 const RentalerRouteChildren: RentalerRouteChildren = {
   RentalerIndexRoute: RentalerIndexRoute,
   RentalerEquipmentNewRoute: RentalerEquipmentNewRoute,
   RentalerEquipmentIndexRoute: RentalerEquipmentIndexRoute,
+  RentalerEquipmentEquipmentIdEditRoute: RentalerEquipmentEquipmentIdEditRoute,
 }
 
 const RentalerRouteWithChildren = RentalerRoute._addFileChildren(
