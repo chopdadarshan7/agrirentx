@@ -19,7 +19,7 @@ export const Route = createFileRoute("/rentaler/bookings/")({
   component: RentalerBookingsPage,
 });
 
-const filters = ["all", "pending", "approved", "ongoing", "completed", "cancelled"] as const;
+const filters = ["all", "pending", "confirmed", "active", "completed", "cancelled"] as const;
 
 function RentalerBookingsPage() {
   const [filter, setFilter] = useState<(typeof filters)[number]>("all");
