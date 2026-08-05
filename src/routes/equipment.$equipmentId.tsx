@@ -159,7 +159,7 @@ function EquipmentDetailsPage() {
                 Next available window: 12 Aug – 30 Sep 2026. Exact dates are picked at checkout.
               </p>
               <Button className="w-full" size="lg" asChild disabled={item.status !== "available"}>
-                <Link to="/payment/$bookingId" params={{ bookingId: "BK-24081" }}>
+                <Link to="/book/$equipmentId" params={{ equipmentId: item.id }}>
                   Book now
                 </Link>
               </Button>
