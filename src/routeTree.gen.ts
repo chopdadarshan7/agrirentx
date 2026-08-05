@@ -22,6 +22,7 @@ import { Route as AdminPaymentsRouteImport } from './routes/admin.payments'
 import { Route as AdminRentalersRouteImport } from './routes/admin.rentalers'
 import { Route as AdminReviewsRouteImport } from './routes/admin.reviews'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
+import { Route as BookEquipmentIdRouteImport } from './routes/book.$equipmentId'
 import { Route as EquipmentIndexRouteImport } from './routes/equipment.index'
 import { Route as EquipmentEquipmentIdRouteImport } from './routes/equipment.$equipmentId'
 import { Route as FarmerIndexRouteImport } from './routes/farmer.index'
@@ -103,6 +104,11 @@ const AdminUsersRoute = AdminUsersRouteImport.update({
   id: '/users',
   path: '/users',
   getParentRoute: () => AdminRoute,
+} as any)
+const BookEquipmentIdRoute = BookEquipmentIdRouteImport.update({
+  id: '/book/$equipmentId',
+  path: '/book/$equipmentId',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const EquipmentIndexRoute = EquipmentIndexRouteImport.update({
   id: '/equipment/',
@@ -200,6 +206,7 @@ export interface FileRoutesByFullPath {
   '/admin/rentalers': typeof AdminRentalersRoute
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/users': typeof AdminUsersRoute
+  '/book/$equipmentId': typeof BookEquipmentIdRoute
   '/equipment/$equipmentId': typeof EquipmentEquipmentIdRoute
   '/farmer/notifications': typeof FarmerNotificationsRoute
   '/farmer/payments': typeof FarmerPaymentsRoute
@@ -228,6 +235,7 @@ export interface FileRoutesByTo {
   '/admin/rentalers': typeof AdminRentalersRoute
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/users': typeof AdminUsersRoute
+  '/book/$equipmentId': typeof BookEquipmentIdRoute
   '/equipment/$equipmentId': typeof EquipmentEquipmentIdRoute
   '/farmer/notifications': typeof FarmerNotificationsRoute
   '/farmer/payments': typeof FarmerPaymentsRoute
@@ -260,6 +268,7 @@ export interface FileRoutesById {
   '/admin/rentalers': typeof AdminRentalersRoute
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/users': typeof AdminUsersRoute
+  '/book/$equipmentId': typeof BookEquipmentIdRoute
   '/equipment/$equipmentId': typeof EquipmentEquipmentIdRoute
   '/farmer/notifications': typeof FarmerNotificationsRoute
   '/farmer/payments': typeof FarmerPaymentsRoute
@@ -293,6 +302,7 @@ export interface FileRouteTypes {
     | '/admin/rentalers'
     | '/admin/reviews'
     | '/admin/users'
+    | '/book/$equipmentId'
     | '/equipment/$equipmentId'
     | '/farmer/notifications'
     | '/farmer/payments'
@@ -321,6 +331,7 @@ export interface FileRouteTypes {
     | '/admin/rentalers'
     | '/admin/reviews'
     | '/admin/users'
+    | '/book/$equipmentId'
     | '/equipment/$equipmentId'
     | '/farmer/notifications'
     | '/farmer/payments'
@@ -352,6 +363,7 @@ export interface FileRouteTypes {
     | '/admin/rentalers'
     | '/admin/reviews'
     | '/admin/users'
+    | '/book/$equipmentId'
     | '/equipment/$equipmentId'
     | '/farmer/notifications'
     | '/farmer/payments'
@@ -378,6 +390,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
   RentalerRoute: typeof RentalerRouteWithChildren
+  BookEquipmentIdRoute: typeof BookEquipmentIdRoute
   EquipmentEquipmentIdRoute: typeof EquipmentEquipmentIdRoute
   EquipmentIndexRoute: typeof EquipmentIndexRoute
 }
@@ -474,6 +487,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/users'
       preLoaderRoute: typeof AdminUsersRouteImport
       parentRoute: typeof AdminRoute
+    }
+    '/book/$equipmentId': {
+      id: '/book/$equipmentId'
+      path: '/book/$equipmentId'
+      fullPath: '/book/$equipmentId'
+      preLoaderRoute: typeof BookEquipmentIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/equipment/': {
       id: '/equipment/'
@@ -666,6 +686,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
   RentalerRoute: RentalerRouteWithChildren,
+  BookEquipmentIdRoute: BookEquipmentIdRoute,
   EquipmentEquipmentIdRoute: EquipmentEquipmentIdRoute,
   EquipmentIndexRoute: EquipmentIndexRoute,
 }
