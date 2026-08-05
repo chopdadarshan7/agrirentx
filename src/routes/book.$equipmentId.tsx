@@ -134,7 +134,7 @@ function BookEquipmentPage() {
     delivery: "pickup",
     location: "",
     phone: "+91 98765 43210",
-    purpose: purposes[0],
+    purpose: "Sowing / Planting",
     message: "",
   });
   const set = <K extends keyof Form>(k: K, v: Form[K]) => setForm((f) => ({ ...f, [k]: v }));
