@@ -1,0 +1,3 @@
+req.uploadFolder = "equipment";
+
+upload.array("images", 5);
