@@ -1,10 +1,12 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 import { ArrowRight, Search, ShieldCheck, Tractor, Wallet } from "lucide-react";
 import { PublicShell } from "@/components/SiteHeader";
 import { EquipmentCard } from "@/components/EquipmentCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { categories, equipments } from "@/lib/data";
+import { useCategories } from "@/hooks/queries/use-categories";
+import { useEquipmentList } from "@/hooks/queries/use-equipment";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -26,7 +28,11 @@ export const Route = createFileRoute("/")({
 });
 
 function HomePage() {
-  const featured = equipments.filter((e) => e.approvalStatus === "approved").slice(0, 6);
+  const navigate = useNavigate();
+  const [query, setQuery] = useState("");
+  const { data: categories } = useCategories();
+  const { data: featuredData } = useEquipmentList({ limit: 6, sort: "rating" });
+  const featured = featuredData?.items ?? [];
 
   return (
     <PublicShell>
@@ -35,7 +41,7 @@ function HomePage() {
           <div className="max-w-2xl animate-fade-in-up">
             <span className="inline-flex items-center gap-2 rounded-sm border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
               <ShieldCheck className="size-3.5 text-primary" />
-              Verified owners in 240+ districts
+              Verified owners near you
             </span>
             <h1 className="mt-5 text-4xl font-semibold leading-tight sm:text-5xl">
               Rent the right machine for this season, from a farmer nearby.
@@ -47,7 +53,10 @@ function HomePage() {
 
             <form
               className="mt-8 flex flex-col gap-2 sm:flex-row"
-              onSubmit={(e) => e.preventDefault()}
+              onSubmit={(e) => {
+                e.preventDefault();
+                navigate({ to: "/equipment", search: { search: query || undefined } });
+              }}
             >
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -55,30 +64,15 @@ function HomePage() {
                   placeholder="Search nearby equipment — e.g. 45 HP tractor, Nashik"
                   className="h-12 bg-card pl-9"
                   aria-label="Search nearby equipment"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
                 />
               </div>
-              <Button size="lg" className="h-12" asChild>
-                <Link to="/equipment">
-                  Search nearby equipment
-                  <ArrowRight className="size-4" />
-                </Link>
+              <Button size="lg" className="h-12" type="submit">
+                Search nearby equipment
+                <ArrowRight className="size-4" />
               </Button>
             </form>
-
-            <dl className="mt-10 grid grid-cols-3 gap-6 border-t border-border pt-6 text-sm">
-              <div>
-                <dt className="text-muted-foreground">Listings live</dt>
-                <dd className="text-xl font-semibold">4,380</dd>
-              </div>
-              <div>
-                <dt className="text-muted-foreground">Avg. booking time</dt>
-                <dd className="text-xl font-semibold">6 min</dd>
-              </div>
-              <div>
-                <dt className="text-muted-foreground">Owner payout</dt>
-                <dd className="text-xl font-semibold">48 hrs</dd>
-              </div>
-            </dl>
           </div>
         </div>
       </section>
@@ -89,11 +83,11 @@ function HomePage() {
           Every listing is document-verified before it goes live.
         </p>
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {categories.map((c) => (
+          {categories?.map((c) => (
             <Link
-              key={c.slug}
+              key={c._id}
               to="/equipment"
-              search={{ category: c.slug }}
+              search={{ category: c._id }}
               className="surface-card group flex items-start gap-4 p-5 transition-shadow hover:shadow-md"
             >
               <span className="flex size-11 shrink-0 items-center justify-center rounded-md bg-accent text-accent-foreground">
@@ -101,8 +95,7 @@ function HomePage() {
               </span>
               <div>
                 <p className="font-medium group-hover:text-primary">{c.name}</p>
-                <p className="mt-0.5 text-sm text-muted-foreground">{c.description}</p>
-                <p className="mt-2 text-xs text-muted-foreground">{c.count} listings</p>
+                {c.description ? <p className="mt-0.5 text-sm text-muted-foreground">{c.description}</p> : null}
               </div>
             </Link>
           ))}
@@ -121,7 +114,7 @@ function HomePage() {
         </div>
         <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {featured.map((item) => (
-            <EquipmentCard key={item.id} item={item} showStatus={false} />
+            <EquipmentCard key={item._id} item={item} showStatus={false} />
           ))}
         </div>
       </section>
@@ -131,8 +124,7 @@ function HomePage() {
           <div className="max-w-xl">
             <h2 className="text-2xl font-semibold">Own a tractor that sits idle?</h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              List it once, get verified, and earn from every idle week. Payouts settle within 48
-              hours of rental completion.
+              List it once, get verified, and earn from every idle week.
             </p>
           </div>
           <div className="flex gap-3">

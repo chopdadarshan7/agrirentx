@@ -1,11 +1,25 @@
-import { createFileRoute, Link, notFound, useParams } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ArrowLeft, Phone } from "lucide-react";
 import { PageHeader, SectionCard } from "@/components/Primitives";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
-import { bookings, inr } from "@/lib/data";
+import { inr } from "@/lib/data";
+import { qk } from "@/lib/query-keys";
+import { getBooking } from "@/lib/api/bookings";
+import { useApproveBooking, useRejectBooking, useCompleteBooking } from "@/hooks/queries/use-bookings";
 
 export const Route = createFileRoute("/rentaler/bookings/$bookingId")({
+  loader: async ({ params, context }) => {
+    try {
+      const booking = await context.queryClient.ensureQueryData({
+        queryKey: qk.bookingDetail(params.bookingId),
+        queryFn: () => getBooking(params.bookingId),
+      });
+      return { booking };
+    } catch {
+      throw notFound();
+    }
+  },
   head: () => ({
     meta: [
       { title: "Booking Details — AgriRentX" },
@@ -18,9 +32,14 @@ export const Route = createFileRoute("/rentaler/bookings/$bookingId")({
 });
 
 function RentalerBookingDetail() {
-  const { bookingId } = useParams({ from: "/rentaler/bookings/$bookingId" });
-  const booking = bookings.find((b) => b.id === bookingId);
-  if (!booking) throw notFound();
+  const { booking } = Route.useLoaderData();
+  const approveBooking = useApproveBooking();
+  const rejectBooking = useRejectBooking();
+  const completeBooking = useCompleteBooking();
+
+  const equipment = typeof booking.equipment_id === "string" ? null : booking.equipment_id;
+  const farmer = typeof booking.farmer_id === "string" ? null : booking.farmer_id;
+  const days = booking.total_days;
 
   return (
     <div className="space-y-6">
@@ -32,12 +51,12 @@ function RentalerBookingDetail() {
       </Button>
 
       <PageHeader
-        title={booking.equipmentTitle}
-        description={`Booking ${booking.id}`}
+        title={equipment?.title ?? "Booking"}
+        description={`Booking ${booking._id}`}
         actions={
           <div className="flex gap-2">
-            <StatusBadge status={booking.status} />
-            <StatusBadge status={booking.paymentStatus} />
+            <StatusBadge status={booking.booking_status} />
+            <StatusBadge status={booking.payment_status} />
           </div>
         }
       />
@@ -46,11 +65,18 @@ function RentalerBookingDetail() {
         <SectionCard title="Rental details">
           <dl className="grid gap-4 sm:grid-cols-2">
             {[
-              ["Rental window", `${booking.from} – ${booking.to}`],
-              ["Duration", `${booking.days} day${booking.days > 1 ? "s" : ""}`],
-              ["Rental amount", inr(booking.amount)],
-              ["Booking ID", booking.id],
-              ["Booked on", booking.placedAt],
+              [
+                "Rental window",
+                `${new Date(booking.start_date).toLocaleDateString()} – ${new Date(booking.end_date).toLocaleDateString()}`,
+              ],
+              ["Duration", `${days} day${days > 1 ? "s" : ""}`],
+              ["Rental amount", inr(booking.total_amount)],
+              [
+                "Pickup & delivery",
+                booking.delivery_required ? `Delivery — ${booking.delivery_address ?? "—"}` : "Self pickup",
+              ],
+              ["Booking ID", booking._id],
+              ["Booked on", new Date(booking.createdAt).toLocaleDateString()],
             ].map(([k, v]) => (
               <div key={k}>
                 <dt className="text-xs uppercase tracking-wide text-muted-foreground">{k}</dt>
@@ -62,22 +88,42 @@ function RentalerBookingDetail() {
 
         <div className="space-y-6">
           <SectionCard title="Renter">
-            <p className="text-sm font-medium">{booking.farmer}</p>
-            <p className="text-sm text-muted-foreground">Rented {booking.equipmentTitle}</p>
-            <Button variant="outline" size="sm" className="mt-3">
-              <Phone className="size-4" />
-              Contact renter
-            </Button>
+            <p className="text-sm font-medium">{farmer?.fullName ?? "Farmer"}</p>
+            {equipment ? <p className="text-sm text-muted-foreground">Rented {equipment.title}</p> : null}
+            {booking.contact_phone ? (
+              <p className="mt-1 text-sm text-muted-foreground">Contact: {booking.contact_phone}</p>
+            ) : null}
+            {booking.contact_phone ?? farmer?.phone ? (
+              <Button variant="outline" size="sm" className="mt-3" asChild>
+                <a href={`tel:${booking.contact_phone ?? farmer?.phone}`}>
+                  <Phone className="size-4" />
+                  Contact renter
+                </a>
+              </Button>
+            ) : null}
           </SectionCard>
 
-          {booking.status === "pending" ? (
+          {booking.booking_status === "confirmed" ? (
             <SectionCard title="Respond to request">
               <div className="flex gap-2">
-                <Button className="flex-1">Approve</Button>
-                <Button variant="outline" className="flex-1">
+                <Button className="flex-1" onClick={() => approveBooking.mutate(booking._id)} disabled={approveBooking.isPending}>
+                  Approve
+                </Button>
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => rejectBooking.mutate({ id: booking._id })}
+                  disabled={rejectBooking.isPending}
+                >
                   Reject
                 </Button>
               </div>
+            </SectionCard>
+          ) : booking.booking_status === "active" ? (
+            <SectionCard title="Rental in progress">
+              <Button className="w-full" onClick={() => completeBooking.mutate(booking._id)} disabled={completeBooking.isPending}>
+                Mark as completed
+              </Button>
             </SectionCard>
           ) : null}
         </div>

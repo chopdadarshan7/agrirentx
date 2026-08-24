@@ -9,6 +9,7 @@ const {
   logout,
   getMe,
   upgradeToRentaler,
+  updateMe,
 } = require("../controllers/authController");
 
 const {
@@ -129,6 +130,21 @@ router.post("/logout", protect, logout);
  *         description: Current User Details
  */
 router.get("/me", protect, getMe);
+
+// Update Current User Profile
+/**
+ * @swagger
+ * /api/auth/me:
+ *   put:
+ *     summary: Update Current User Profile
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Profile Updated Successfully
+ */
+router.put("/me", protect, updateMe);
 
 // Upgrade Farmer → Rentaler
 /**

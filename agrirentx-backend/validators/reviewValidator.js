@@ -5,14 +5,6 @@ const reviewValidationRules = [
         .notEmpty()
         .withMessage("Booking ID is required."),
 
-    body("equipment_id")
-        .notEmpty()
-        .withMessage("Equipment ID is required."),
-
-    body("rentaler_id")
-        .notEmpty()
-        .withMessage("Rentaler ID is required."),
-
     body("rating")
         .isInt({ min: 1, max: 5 })
         .withMessage("Rating must be between 1 and 5."),

@@ -199,7 +199,7 @@ const refundPaymentService = async (paymentId) => {
     try {
 
         const refund =
-            await Razorpay.payments.refund(
+            await razorpay.payments.refund(
                 payment.razorpay_payment_id,
                 {
                     amount: payment.amount * 100,
@@ -279,7 +279,7 @@ const retryPaymentService = async (paymentId) => {
         receipt: `retry_${booking._id}_${Date.now()}`,
     };
 
-    const order = await Razorpay.orders.create(options);
+    const order = await razorpay.orders.create(options);
 
     payment.razorpay_order_id = order.id;
     payment.payment_status = "pending";
@@ -337,9 +337,13 @@ const getPaymentHistoryService = async (farmerId) => {
 
 const getAllPaymentsService = async () => {
     return await Payment.find()
-        .populate("booking_id")
-        .populate("farmer_id", "fullName email")
-        .populate("rentaler_id", "fullName email")
+        .populate({
+            path: "booking_id",
+            populate: [
+                { path: "farmer_id", select: "fullName email" },
+                { path: "rentaler_id", select: "fullName email" },
+            ],
+        })
         .sort({ createdAt: -1 });
 };
 

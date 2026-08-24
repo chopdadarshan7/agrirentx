@@ -1,17 +1,39 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { Menu, Sprout } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useAuth } from "@/contexts/AuthContext";
+import { useLogout } from "@/hooks/queries/use-auth";
 
-const nav = [
-  { to: "/equipment", label: "Browse equipment" },
-  { to: "/farmer", label: "Farmer" },
-  { to: "/rentaler", label: "Rentaler" },
-  { to: "/admin", label: "Admin" },
-] as const;
+// The booking/payment flow is a critical transactional page — even though it
+// shares this public header, translation stays off there (same reason it's
+// off in dashboards: React's re-renders during checkout collide with the
+// translate widget's DOM rewrites).
+function useCanTranslate() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  return !pathname.startsWith("/book/");
+}
+
+const nav = [{ to: "/equipment", label: "Browse equipment" }] as const;
+
+function landingPathFor(user: { isAdmin: boolean; is_rentaler: boolean; rentaler_status: string }) {
+  if (user.isAdmin) return "/admin";
+  if (user.is_rentaler && user.rentaler_status === "approved") return "/rentaler";
+  return "/farmer";
+}
 
 export function SiteHeader() {
+  const { user, isAuthenticated } = useAuth();
+  const logout = useLogout();
+  const navigate = useNavigate();
+  const canTranslate = useCanTranslate();
+
+  const handleLogout = () => {
+    logout.mutate(undefined, { onSuccess: () => navigate({ to: "/" }) });
+  };
+
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-card/85 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4">
@@ -36,12 +58,28 @@ export function SiteHeader() {
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
-          <Button variant="ghost" asChild>
-            <Link to="/login">Log in</Link>
-          </Button>
-          <Button asChild>
-            <Link to="/register">Create account</Link>
-          </Button>
+          {canTranslate ? (
+            <LanguageSwitcher className="h-9 w-auto gap-1.5 border-0 bg-transparent shadow-none hover:bg-accent" />
+          ) : null}
+          {isAuthenticated && user ? (
+            <>
+              <Button variant="ghost" asChild>
+                <Link to={landingPathFor(user)}>Dashboard</Link>
+              </Button>
+              <Button variant="outline" onClick={handleLogout} disabled={logout.isPending}>
+                Log out
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button variant="ghost" asChild>
+                <Link to="/login">Log in</Link>
+              </Button>
+              <Button asChild>
+                <Link to="/register">Create account</Link>
+              </Button>
+            </>
+          )}
         </div>
 
         <Sheet>
@@ -57,12 +95,34 @@ export function SiteHeader() {
                   {n.label}
                 </Link>
               ))}
-              <Link to="/login" className="rounded-md px-3 py-2 text-sm hover:bg-accent">
-                Log in
-              </Link>
-              <Link to="/register" className="rounded-md px-3 py-2 text-sm hover:bg-accent">
-                Create account
-              </Link>
+              {canTranslate ? (
+                <div className="px-3 py-2">
+                  <LanguageSwitcher />
+                </div>
+              ) : null}
+              {isAuthenticated && user ? (
+                <>
+                  <Link to={landingPathFor(user)} className="rounded-md px-3 py-2 text-sm hover:bg-accent">
+                    Dashboard
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="rounded-md px-3 py-2 text-left text-sm hover:bg-accent"
+                  >
+                    Log out
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link to="/login" className="rounded-md px-3 py-2 text-sm hover:bg-accent">
+                    Log in
+                  </Link>
+                  <Link to="/register" className="rounded-md px-3 py-2 text-sm hover:bg-accent">
+                    Create account
+                  </Link>
+                </>
+              )}
             </nav>
           </SheetContent>
         </Sheet>

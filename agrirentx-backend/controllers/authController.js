@@ -19,6 +19,8 @@ const {
 const {
   registerValidator,
   loginValidator,
+  updateProfileValidator,
+  upgradeToRentalerValidator,
 } = require("../validators/authValidator");
 
 // =========================================
@@ -40,7 +42,6 @@ const register = async (req, res, next) => {
       email,
       phone,
       password,
-      role,
     } = req.body;
 
     const existingUser = await User.findOne({
@@ -59,8 +60,8 @@ const register = async (req, res, next) => {
       email,
       phone,
       password,
-      is_farmer: role !== "rentaler",
-      is_rentaler: role === "rentaler",
+      is_farmer: true,
+      is_rentaler: false,
     });
 
     const accessToken = generateAccessToken(user);
@@ -264,6 +265,15 @@ const getMe = asyncHandler(async (req, res, next) => {
 // =========================================
 const upgradeToRentaler = async (req, res, next) => {
   try {
+    const { error } = upgradeToRentalerValidator.validate(req.body);
+
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.details[0].message,
+      });
+    }
+
     const user = await User.findById(req.user._id);
 
     if (!user) {
@@ -280,8 +290,16 @@ const upgradeToRentaler = async (req, res, next) => {
       });
     }
 
+    const { account_holder, account_number, ifsc_code, bank_name } = req.body;
+
     user.is_rentaler = true;
     user.rentaler_status = "pending";
+    user.bank_details = {
+      account_holder,
+      account_number,
+      ifsc_code,
+      bank_name,
+    };
 
     await user.save();
 
@@ -303,6 +321,61 @@ const upgradeToRentaler = async (req, res, next) => {
   }
 };
 
+// =========================================
+// Update Current User Profile
+// =========================================
+const updateMe = async (req, res, next) => {
+  try {
+    const { error } = updateProfileValidator.validate(req.body);
+
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.details[0].message,
+      });
+    }
+
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found.",
+      });
+    }
+
+    const { fullName, phone, address, city, state, pincode } = req.body;
+
+    if (fullName !== undefined) user.fullName = fullName;
+    if (phone !== undefined) user.phone = phone;
+    if (address !== undefined) user.address = address;
+    if (city !== undefined) user.city = city;
+    if (state !== undefined) user.state = state;
+    if (pincode !== undefined) user.pincode = pincode;
+
+    await user.save();
+
+    const userData = user.toObject();
+    delete userData.password;
+    delete userData.refreshToken;
+
+    return res.status(200).json({
+      success: true,
+      message: "Profile updated successfully.",
+      user: userData,
+    });
+
+  } catch (error) {
+    if (error.code === 11000) {
+      return res.status(409).json({
+        success: false,
+        message: "Phone number already in use.",
+      });
+    }
+    next(error);
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -310,4 +383,5 @@ module.exports = {
   logout,
   getMe,
   upgradeToRentaler,
+  updateMe,
 };

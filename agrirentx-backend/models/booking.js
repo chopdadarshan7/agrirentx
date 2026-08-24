@@ -84,6 +84,56 @@ const bookingSchema = new mongoose.Schema(
             default: "pending",
         },
 
+        delivery_required: {
+            type: Boolean,
+            default: false,
+        },
+
+        delivery_address: {
+            type: String,
+            default: "",
+        },
+
+        contact_phone: {
+            type: String,
+            default: "",
+        },
+
+        // EqTrack: OTP-confirmed physical handoff, tracked separately from
+        // booking_status so it doesn't interfere with the existing
+        // confirm/approve/complete flow. Only meaningful when delivery_required.
+        logistics_status: {
+            type: String,
+            enum: ["awaiting_delivery", "delivered", "returned"],
+            default: "awaiting_delivery",
+        },
+
+        delivery_otp: {
+            type: String,
+            default: "",
+        },
+
+        delivery_otp_generated_at: {
+            type: Date,
+        },
+
+        delivered_at: {
+            type: Date,
+        },
+
+        return_otp: {
+            type: String,
+            default: "",
+        },
+
+        return_otp_generated_at: {
+            type: Date,
+        },
+
+        returned_at: {
+            type: Date,
+        },
+
         cancellation_reason: {
             type: String,
             default: "",

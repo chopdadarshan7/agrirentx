@@ -1,8 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { CalendarX2, Pencil, PlusCircle, Trash2 } from "lucide-react";
-import { EmptyState, PageHeader, SectionCard } from "@/components/Primitives";
+import { useState } from "react";
+import { CalendarOff, Pencil, PlusCircle, Trash2 } from "lucide-react";
+import { EmptyState, PageHeader } from "@/components/Primitives";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,28 +18,129 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { equipments, inr } from "@/lib/data";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { inr } from "@/lib/data";
+import { useAuth } from "@/contexts/AuthContext";
+import { useMyEquipment, useDeleteEquipment } from "@/hooks/queries/use-equipment";
+import { useEquipmentAvailability, useCreateAvailability, useDeleteAvailability } from "@/hooks/queries/use-availability";
+
+function todayIso() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function BlockDatesDialog({ equipmentId, equipmentTitle }: { equipmentId: string; equipmentTitle: string }) {
+  const [open, setOpen] = useState(false);
+  const [startDate, setStartDate] = useState(todayIso());
+  const [endDate, setEndDate] = useState(todayIso());
+  const [reason, setReason] = useState("");
+  const { data: blocks = [] } = useEquipmentAvailability(open ? equipmentId : undefined);
+  const createBlock = useCreateAvailability();
+  const deleteBlock = useDeleteAvailability();
+  const blockedRanges = blocks.filter((b) => b.status !== "available");
+
+  const handleAdd = () => {
+    createBlock.mutate(
+      { equipment_id: equipmentId, start_date: startDate, end_date: endDate, status: "blocked", reason },
+      { onSuccess: () => setReason("") },
+    );
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="icon" aria-label="Block dates">
+          <CalendarOff className="size-4" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Block dates — {equipmentTitle}</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          {blockedRanges.length > 0 ? (
+            <ul className="space-y-1.5 text-sm">
+              {blockedRanges.map((b) => (
+                <li key={b._id} className="flex items-center justify-between gap-2 rounded-md border border-border px-3 py-1.5">
+                  <span>
+                    {new Date(b.start_date).toLocaleDateString()} – {new Date(b.end_date).toLocaleDateString()}
+                    {b.reason ? ` · ${b.reason}` : ""}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-7 text-destructive"
+                    aria-label="Remove block"
+                    onClick={() => deleteBlock.mutate({ id: b._id, equipmentId })}
+                    disabled={deleteBlock.isPending}
+                  >
+                    <Trash2 className="size-3.5" />
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-muted-foreground">No blocked dates yet.</p>
+          )}
+
+          <div className="space-y-3 border-t border-border pt-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="block-start">Start date</Label>
+                <Input
+                  id="block-start"
+                  type="date"
+                  value={startDate}
+                  min={todayIso()}
+                  onChange={(e) => setStartDate(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="block-end">End date</Label>
+                <Input
+                  id="block-end"
+                  type="date"
+                  value={endDate}
+                  min={startDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="block-reason">Reason (optional)</Label>
+              <Input
+                id="block-reason"
+                placeholder="e.g. Under maintenance"
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+              />
+            </div>
+            <Button className="w-full" onClick={handleAdd} disabled={createBlock.isPending}>
+              {createBlock.isPending ? "Blocking…" : "Block these dates"}
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 export const Route = createFileRoute("/rentaler/equipment/")({
   head: () => ({
     meta: [
       { title: "My Equipment — AgriRentX" },
-      { name: "description", content: "Manage your listings, availability blocks and approval status." },
+      { name: "description", content: "Manage your listings and approval status." },
       { property: "og:title", content: "My Equipment — AgriRentX" },
-      { property: "og:description", content: "Edit listings and block maintenance dates." },
+      { property: "og:description", content: "Edit and manage your equipment listings." },
     ],
   }),
   component: MyEquipmentsPage,
 });
 
-const blockedDates = [
-  { id: "AV-1", equipment: "Mahindra 575 DI XP Plus", range: "18 Aug – 21 Aug 2026", reason: "Service & oil change" },
-  { id: "AV-2", equipment: "Sonalika DI 60 RX Tractor", range: "2 Sep – 4 Sep 2026", reason: "Own field work" },
-];
-
 function MyEquipmentsPage() {
-  const listings = equipments.filter((e) => e.owner === "Rajesh Patil");
+  const { user } = useAuth();
+  const { data } = useMyEquipment(user?._id);
+  const listings = data?.items ?? [];
+  const deleteEquipment = useDeleteEquipment();
 
   return (
     <div className="space-y-6">
@@ -56,7 +161,7 @@ function MyEquipmentsPage() {
         <EmptyState
           icon={<PlusCircle className="size-5" />}
           title="No listings yet"
-          message="Add your first machine — most listings are verified and live within two working days."
+          message="Add your first machine to start receiving booking requests."
           action={
             <Button asChild>
               <Link to="/rentaler/equipment/new">Add equipment</Link>
@@ -65,116 +170,70 @@ function MyEquipmentsPage() {
         />
       ) : (
         <div className="surface-card overflow-x-auto">
-          <table className="w-full min-w-[820px] text-sm">
-            <thead className="border-b border-border bg-muted/50 text-left text-xs uppercase tracking-wide text-muted-foreground">
-              <tr>
-                <th className="px-5 py-3 font-medium">Equipment</th>
-                <th className="px-5 py-3 font-medium">Price / day</th>
-                <th className="px-5 py-3 font-medium">Listing status</th>
-                <th className="px-5 py-3 font-medium">Approval</th>
-                <th className="px-5 py-3 text-right font-medium">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {listings.map((e) => {
-                const locked = e.activeBookings > 0;
-                return (
-                  <tr key={e.id}>
-                    <td className="px-5 py-3">
-                      <p className="font-medium">{e.title}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {e.categoryName} · {e.district}
-                      </p>
-                    </td>
-                    <td className="px-5 py-3">{inr(e.pricePerDay)}</td>
-                    <td className="px-5 py-3">
-                      <StatusBadge status={e.status} />
-                    </td>
-                    <td className="px-5 py-3">
-                      <StatusBadge status={e.approvalStatus} />
-                    </td>
-                    <td className="px-5 py-3">
-                      <div className="flex justify-end gap-1">
-                        <Button variant="ghost" size="icon" aria-label="Edit listing" asChild>
-                          <Link to="/rentaler/equipment/$equipmentId/edit" params={{ equipmentId: e.id }}>
-                            <Pencil className="size-4" />
-                          </Link>
-                        </Button>
-                        <AlertDialog>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span>
-                                <AlertDialogTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    aria-label="Delete listing"
-                                    disabled={locked}
-                                    className="text-destructive"
-                                  >
-                                    <Trash2 className="size-4" />
-                                  </Button>
-                                </AlertDialogTrigger>
-                              </span>
-                            </TooltipTrigger>
-                            {locked ? (
-                              <TooltipContent>
-                                Can't delete — {e.activeBookings} active booking
-                                {e.activeBookings > 1 ? "s" : ""} on this machine
-                              </TooltipContent>
-                            ) : null}
-                          </Tooltip>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Delete {e.title}?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                This removes the listing permanently. Past bookings and payouts stay
-                                in your records.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Keep listing</AlertDialogCancel>
-                              <AlertDialogAction>Delete listing</AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <Table className="min-w-[820px]">
+            <TableHeader>
+              <TableRow>
+                <TableHead>Equipment</TableHead>
+                <TableHead>Price / day</TableHead>
+                <TableHead>Listing status</TableHead>
+                <TableHead>Approval</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {listings.map((e) => (
+                <TableRow key={e._id}>
+                  <TableCell>
+                    <p className="font-medium">{e.title}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {e.location.district ?? e.location.address}
+                    </p>
+                  </TableCell>
+                  <TableCell>{inr(e.price_per_day)}</TableCell>
+                  <TableCell>
+                    <StatusBadge status={e.status} />
+                  </TableCell>
+                  <TableCell>
+                    <StatusBadge status={e.approval_status} />
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex justify-end gap-1">
+                      <Button variant="ghost" size="icon" aria-label="Edit listing" asChild>
+                        <Link to="/rentaler/equipment/$equipmentId/edit" params={{ equipmentId: e._id }}>
+                          <Pencil className="size-4" />
+                        </Link>
+                      </Button>
+                      <BlockDatesDialog equipmentId={e._id} equipmentTitle={e.title} />
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="icon" aria-label="Delete listing" className="text-destructive">
+                            <Trash2 className="size-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete {e.title}?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This removes the listing permanently. Past bookings and payouts stay
+                              in your records.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Keep listing</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => deleteEquipment.mutate(e._id)}>
+                              Delete listing
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
       )}
-
-      <SectionCard
-        title="Availability blocks"
-        description="Dates marked unavailable for maintenance or your own field work"
-        actions={
-          <Button variant="outline" size="sm">
-            <CalendarX2 className="size-4" />
-            Block dates
-          </Button>
-        }
-      >
-        <ul className="divide-y divide-border">
-          {blockedDates.map((b) => (
-            <li key={b.id} className="flex flex-wrap items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
-              <div>
-                <p className="text-sm font-medium">{b.equipment}</p>
-                <p className="text-xs text-muted-foreground">{b.reason}</p>
-              </div>
-              <div className="flex items-center gap-3">
-                <StatusBadge status="maintenance" label={b.range} />
-                <Button variant="ghost" size="sm">
-                  Remove
-                </Button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </SectionCard>
     </div>
   );
 }

@@ -141,10 +141,6 @@ const getDashboardStatisticsService = async () => {
             })
             .limit(10),
         Payment.find()
-            .populate(
-                "user_id farmer_id",
-                "fullName"
-            )
             .sort({
                 createdAt: -1
             })
@@ -283,6 +279,20 @@ const updateUserStatusService = async (
             new: true,
             runValidators: true,
         }
+    ).select("-password");
+
+    if (!user) {
+        throw new Error("User not found.");
+    }
+
+    return user;
+};
+
+const setUserBlockedService = async (id, isBlocked) => {
+    const user = await User.findByIdAndUpdate(
+        id,
+        { isBlocked },
+        { new: true, runValidators: true }
     ).select("-password");
 
     if (!user) {
@@ -636,8 +646,14 @@ const getAllPaymentsService = async ({
     }
 
     const payments = await Payment.find(query)
-        .populate("booking_id")
-        .populate("user_id", "fullName email phone")
+        .populate({
+            path: "booking_id",
+            populate: [
+                { path: "equipment_id", select: "title images price_per_day" },
+                { path: "farmer_id", select: "fullName email phone" },
+                { path: "rentaler_id", select: "fullName email phone" },
+            ],
+        })
         .sort({
             createdAt: -1,
         })
@@ -661,8 +677,14 @@ const getPaymentByIdService = async (
     paymentId
 ) => {
     const payment = await Payment.findById(paymentId)
-        .populate("booking_id")
-        .populate("user_id", "fullName email phone");
+        .populate({
+            path: "booking_id",
+            populate: [
+                { path: "equipment_id", select: "title images price_per_day" },
+                { path: "farmer_id", select: "fullName email phone" },
+                { path: "rentaler_id", select: "fullName email phone" },
+            ],
+        });
 
     if (!payment) {
         throw new Error(
@@ -771,7 +793,6 @@ const getAllReviewsService = async ({
 
     const reviews = await Review.find(query)
         .populate("farmer_id", "fullName email")
-        .populate("user_id", "fullName email")
         .populate("equipment_id", "title name")
         .populate("booking_id")
         .sort({
@@ -798,7 +819,6 @@ const getReviewByIdService = async (
 ) => {
     const review = await Review.findById(reviewId)
         .populate("farmer_id", "fullName email")
-        .populate("user_id", "fullName email")
         .populate("equipment_id")
         .populate("booking_id");
 
@@ -878,7 +898,7 @@ const getAllNotificationsService = async ({
     }
 
     if (is_read !== undefined) {
-        query.is_read = is_read === "true";
+        query.isRead = is_read === "true";
     }
 
     const notifications = await Notification.find(query)
@@ -934,8 +954,7 @@ const markNotificationAsReadService = async (
         );
     }
 
-    notification.is_read = true;
-    notification.read_at = new Date();
+    notification.isRead = true;
 
     await notification.save();
 
@@ -962,17 +981,26 @@ const broadcastNotificationService = async ({
     title,
     message,
     type = "system",
+    audience = "all",
 }) => {
-    const users = await User.find({
-        account_status: "active",
-    }).select("_id");
+    const query = {
+        isBlocked: false,
+        isDeleted: { $ne: true },
+    };
+
+    if (audience === "farmers") {
+        query.is_farmer = true;
+    } else if (audience === "rentalers") {
+        query.is_rentaler = true;
+    }
+
+    const users = await User.find(query).select("_id");
 
     const notifications = users.map((user) => ({
         receiver_id: user._id,
         title,
         message,
         type,
-        is_read: false,
     }));
 
     if (notifications.length > 0) {
@@ -1134,6 +1162,7 @@ module.exports = {
     getAllUsersService,
     getUserByIdService,
     updateUserStatusService,
+    setUserBlockedService,
     deleteUserService,
     approveRentalerService,
     rejectRentalerService,

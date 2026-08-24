@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Search } from "lucide-react";
 import { PageHeader } from "@/components/Primitives";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { users as seed } from "@/lib/data";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useAdminUsers, useBlockUser, useUnblockUser } from "@/hooks/queries/use-admin";
 
 export const Route = createFileRoute("/admin/users")({
   head: () => ({
@@ -20,11 +21,22 @@ export const Route = createFileRoute("/admin/users")({
 });
 
 function AdminUsersPage() {
-  const [rows, setRows] = useState(seed);
-  const [q, setQ] = useState("");
-  const list = rows.filter((u) =>
-    `${u.name} ${u.email} ${u.district}`.toLowerCase().includes(q.trim().toLowerCase()),
-  );
+  const [queryInput, setQueryInput] = useState("");
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const { data } = useAdminUsers({ search: search || undefined, page, limit: 20 });
+  const users = data?.items ?? [];
+  const pagination = data?.pagination;
+  const blockUser = useBlockUser();
+  const unblockUser = useUnblockUser();
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setSearch(queryInput);
+      setPage(1);
+    }, 350);
+    return () => clearTimeout(timeout);
+  }, [queryInput]);
 
   return (
     <div className="space-y-6">
@@ -34,56 +46,76 @@ function AdminUsersPage() {
         <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           className="pl-9"
-          placeholder="Search by name, email or district"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
+          placeholder="Search by name, email or phone"
+          value={queryInput}
+          onChange={(e) => setQueryInput(e.target.value)}
         />
       </div>
 
       <div className="surface-card overflow-x-auto">
-        <table className="w-full min-w-[780px] text-sm">
-          <thead className="border-b border-border bg-muted/50 text-left text-xs uppercase tracking-wide text-muted-foreground">
-            <tr>
-              <th className="px-5 py-3 font-medium">User</th>
-              <th className="px-5 py-3 font-medium">District</th>
-              <th className="px-5 py-3 font-medium">Roles</th>
-              <th className="px-5 py-3 font-medium">Joined</th>
-              <th className="px-5 py-3 text-right font-medium">Action</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {list.map((u) => (
-              <tr key={u.id}>
-                <td className="px-5 py-3">
-                  <p className="font-medium">{u.name}</p>
+        <Table className="min-w-[780px]">
+          <TableHeader>
+            <TableRow>
+              <TableHead>User</TableHead>
+              <TableHead>Location</TableHead>
+              <TableHead>Roles</TableHead>
+              <TableHead className="text-right">Action</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {users.map((u) => (
+              <TableRow key={u._id}>
+                <TableCell>
+                  <p className="font-medium">{u.fullName}</p>
                   <p className="text-xs text-muted-foreground">{u.email}</p>
-                </td>
-                <td className="px-5 py-3 text-muted-foreground">{u.district}</td>
-                <td className="px-5 py-3">
+                </TableCell>
+                <TableCell className="text-muted-foreground">
+                  {[u.city, u.state].filter(Boolean).join(", ") || "—"}
+                </TableCell>
+                <TableCell>
                   <div className="flex flex-wrap gap-1.5">
-                    {u.isFarmer ? <StatusBadge status="active" label="Farmer" /> : null}
-                    {u.isRentaler ? <StatusBadge status="approved" label="Rentaler" /> : null}
+                    {u.is_farmer ? <StatusBadge status="active" label="Farmer" /> : null}
+                    {u.is_rentaler ? <StatusBadge status={u.rentaler_status} label="Rentaler" /> : null}
                     {u.isAdmin ? <StatusBadge status="confirmed" label="Admin" /> : null}
-                    {u.blocked ? <StatusBadge status="rejected" label="Blocked" /> : null}
+                    {u.isBlocked ? <StatusBadge status="rejected" label="Blocked" /> : null}
                   </div>
-                </td>
-                <td className="px-5 py-3 text-muted-foreground">{u.joined}</td>
-                <td className="px-5 py-3 text-right">
+                </TableCell>
+                <TableCell className="text-right">
                   <Button
                     size="sm"
-                    variant={u.blocked ? "default" : "outline"}
-                    onClick={() =>
-                      setRows((l) => l.map((x) => (x.id === u.id ? { ...x, blocked: !x.blocked } : x)))
-                    }
+                    variant={u.isBlocked ? "default" : "outline"}
+                    onClick={() => (u.isBlocked ? unblockUser.mutate(u._id) : blockUser.mutate(u._id))}
+                    disabled={blockUser.isPending || unblockUser.isPending}
                   >
-                    {u.blocked ? "Unblock" : "Block"}
+                    {u.isBlocked ? "Unblock" : "Block"}
                   </Button>
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
+
+      {pagination && pagination.totalPages > 1 ? (
+        <div className="flex items-center justify-between text-sm">
+          <p className="text-muted-foreground">
+            Page {pagination.page} of {pagination.totalPages} · {pagination.total} total
+          </p>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page >= pagination.totalPages}
+              onClick={() => setPage((p) => p + 1)}
+            >
+              Next
+            </Button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

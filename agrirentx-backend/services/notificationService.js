@@ -7,7 +7,6 @@ const createNotificationService = async (data) => {
         message: data.message,
         type: data.type,
         reference_id: data.reference_id || null,
-        is_read: false,
     });
 
     return notification;
@@ -33,8 +32,7 @@ const markNotificationAsReadService = async (
                 receiver_id: userId,
             },
             {
-                is_read: true,
-                read_at: new Date(),
+                isRead: true,
             },
             {
                 new: true,
@@ -56,11 +54,10 @@ const markAllNotificationsAsReadService = async (
     await Notification.updateMany(
         {
             receiver_id: userId,
-            is_read: false,
+            isRead: false,
         },
         {
-            is_read: true,
-            read_at: new Date(),
+            isRead: true,
         }
     );
 
@@ -97,13 +94,13 @@ const getNotificationStatisticsService = async (
     const unread =
         await Notification.countDocuments({
             receiver_id: userId,
-            is_read: false,
+            isRead: false,
         });
 
     const read =
         await Notification.countDocuments({
             receiver_id: userId,
-            is_read: true,
+            isRead: true,
         });
 
     return {

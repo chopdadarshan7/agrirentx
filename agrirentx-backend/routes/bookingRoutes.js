@@ -11,6 +11,10 @@ const {
     rejectBooking,
     cancelBooking,
     completeBooking,
+    generateDeliveryOtp,
+    verifyDeliveryOtp,
+    generateReturnOtp,
+    verifyReturnOtp,
 } = require("../controllers/bookingController");
 
 const {
@@ -113,7 +117,7 @@ router.get(
 router.get(
     "/:id",
     protect,
-    getBookingById || getMyBookings
+    getBookingById
 );
 
 // Approve Booking
@@ -240,6 +244,34 @@ router.patch(
     protect,
     isApprovedRentaler,
     completeBooking
+);
+
+// EqTrack — Delivery OTP
+router.put(
+    "/:id/delivery-otp/generate",
+    protect,
+    isApprovedRentaler,
+    generateDeliveryOtp
+);
+router.put(
+    "/:id/delivery-otp/verify",
+    protect,
+    isApprovedRentaler,
+    verifyDeliveryOtp
+);
+
+// EqTrack — Return OTP
+router.put(
+    "/:id/return-otp/generate",
+    protect,
+    isApprovedRentaler,
+    generateReturnOtp
+);
+router.put(
+    "/:id/return-otp/verify",
+    protect,
+    isApprovedRentaler,
+    verifyReturnOtp
 );
 
 module.exports = router;

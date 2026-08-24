@@ -15,8 +15,10 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { bookings, canCancel, inr, type BookingStatus } from "@/lib/data";
+import { inr } from "@/lib/data";
 import { cn } from "@/lib/utils";
+import { useMyBookings, useCancelBooking } from "@/hooks/queries/use-bookings";
+import type { BookingStatus } from "@/types/models";
 
 export const Route = createFileRoute("/farmer/bookings/")({
   head: () => ({
@@ -32,7 +34,7 @@ export const Route = createFileRoute("/farmer/bookings/")({
 
 const filters: (BookingStatus | "all")[] = [
   "all",
-  "pending",
+  "pending_payment",
   "confirmed",
   "active",
   "completed",
@@ -42,8 +44,9 @@ const filters: (BookingStatus | "all")[] = [
 
 function MyBookingsPage() {
   const [filter, setFilter] = useState<BookingStatus | "all">("all");
-  const mine = bookings.filter((b) => b.farmer === "Aarti Deshmukh");
-  const list = filter === "all" ? mine : mine.filter((b) => b.status === filter);
+  const { data: bookings = [] } = useMyBookings();
+  const cancelBooking = useCancelBooking();
+  const list = filter === "all" ? bookings : bookings.filter((b) => b.booking_status === filter);
 
   return (
     <div className="space-y-6">
@@ -61,7 +64,7 @@ function MyBookingsPage() {
                 : "bg-card text-muted-foreground hover:bg-muted",
             )}
           >
-            {f}
+            {f.replace("_", " ")}
           </button>
         ))}
       </div>
@@ -69,7 +72,7 @@ function MyBookingsPage() {
       {list.length === 0 ? (
         <EmptyState
           icon={<PackageSearch className="size-5" />}
-          title={`No ${filter === "all" ? "" : filter} bookings`}
+          title={`No ${filter === "all" ? "" : filter.replace("_", " ")} bookings`}
           message="Nothing here yet. Browse equipment in your district and book by the day."
           action={
             <Button asChild>
@@ -79,71 +82,76 @@ function MyBookingsPage() {
         />
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
-          {list.map((b) => (
-            <article key={b.id} className="surface-card space-y-4 p-5">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <Link
-                    to="/farmer/bookings/$bookingId"
-                    params={{ bookingId: b.id }}
-                    className="font-medium hover:text-primary"
-                  >
-                    {b.equipmentTitle}
-                  </Link>
-                  <p className="mt-0.5 text-xs text-muted-foreground">{b.id}</p>
-                </div>
-                <StatusBadge status={b.status} />
-              </div>
-
-              <dl className="grid grid-cols-3 gap-3 text-sm">
-                <div>
-                  <dt className="text-xs text-muted-foreground">From</dt>
-                  <dd>{b.from}</dd>
-                </div>
-                <div>
-                  <dt className="text-xs text-muted-foreground">To</dt>
-                  <dd>{b.to}</dd>
-                </div>
-                <div>
-                  <dt className="text-xs text-muted-foreground">Amount</dt>
-                  <dd className="font-medium">{inr(b.amount)}</dd>
-                </div>
-              </dl>
-
-              <div className="flex items-center justify-between gap-3 border-t border-border pt-3">
-                <StatusBadge status={b.paymentStatus} label={`Payment ${b.paymentStatus}`} />
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" asChild>
-                    <Link to="/farmer/bookings/$bookingId" params={{ bookingId: b.id }}>
-                      Details
+          {list.map((b) => {
+            const equipment = typeof b.equipment_id === "string" ? null : b.equipment_id;
+            return (
+              <article key={b._id} className="surface-card space-y-4 p-5">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <Link
+                      to="/farmer/bookings/$bookingId"
+                      params={{ bookingId: b._id }}
+                      className="font-medium hover:text-primary"
+                    >
+                      {equipment?.title ?? "Equipment"}
                     </Link>
-                  </Button>
-                  {canCancel(b) ? (
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="destructive" size="sm">
-                          Cancel
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Cancel booking {b.id}?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            {inr(b.amount)} will be refunded to your original payment method within
-                            5–7 working days. This cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Keep booking</AlertDialogCancel>
-                          <AlertDialogAction>Cancel and refund {inr(b.amount)}</AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  ) : null}
+                    <p className="mt-0.5 text-xs text-muted-foreground">{b._id}</p>
+                  </div>
+                  <StatusBadge status={b.booking_status} />
                 </div>
-              </div>
-            </article>
-          ))}
+
+                <dl className="grid grid-cols-3 gap-3 text-sm">
+                  <div>
+                    <dt className="text-xs text-muted-foreground">From</dt>
+                    <dd>{new Date(b.start_date).toLocaleDateString()}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-muted-foreground">To</dt>
+                    <dd>{new Date(b.end_date).toLocaleDateString()}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-muted-foreground">Amount</dt>
+                    <dd className="font-medium">{inr(b.total_amount)}</dd>
+                  </div>
+                </dl>
+
+                <div className="flex items-center justify-between gap-3 border-t border-border pt-3">
+                  <StatusBadge status={b.payment_status} label={`Payment ${b.payment_status}`} />
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" asChild>
+                      <Link to="/farmer/bookings/$bookingId" params={{ bookingId: b._id }}>
+                        Details
+                      </Link>
+                    </Button>
+                    {b.can_cancel ? (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="destructive" size="sm">
+                            Cancel
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Cancel this booking?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              The rentaler will be notified. Any payment already made is refunded via
+                              Razorpay. This cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Keep booking</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => cancelBooking.mutate({ id: b._id })}>
+                              Cancel booking
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    ) : null}
+                  </div>
+                </div>
+              </article>
+            );
+          })}
         </div>
       )}
     </div>

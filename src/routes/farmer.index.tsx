@@ -3,7 +3,10 @@ import { CalendarCheck, Heart, Package, Search, Wallet } from "lucide-react";
 import { EmptyState, PageHeader, SectionCard, StatCard } from "@/components/Primitives";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
-import { bookings, inr } from "@/lib/data";
+import { inr } from "@/lib/data";
+import { useAuth } from "@/contexts/AuthContext";
+import { useMyBookings } from "@/hooks/queries/use-bookings";
+import { useWishlist } from "@/hooks/queries/use-wishlist";
 
 export const Route = createFileRoute("/farmer/")({
   head: () => ({
@@ -18,14 +21,20 @@ export const Route = createFileRoute("/farmer/")({
 });
 
 function FarmerDashboard() {
-  const mine = bookings.filter((b) => b.farmer === "Aarti Deshmukh");
-  const active = mine.filter((b) => b.status === "active" || b.status === "confirmed");
-  const spend = mine.filter((b) => b.paymentStatus === "paid").reduce((s, b) => s + b.amount, 0);
+  const { user } = useAuth();
+  const { data: bookings = [] } = useMyBookings();
+  const { data: wishlist = [] } = useWishlist();
+
+  const active = bookings.filter((b) => b.booking_status === "active" || b.booking_status === "confirmed");
+  const spend = bookings
+    .filter((b) => b.payment_status === "paid")
+    .reduce((sum, b) => sum + b.total_amount, 0);
+  const firstName = user?.fullName.split(" ")[0] ?? "";
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Welcome back, Aarti"
+        title={`Welcome back${firstName ? `, ${firstName}` : ""}`}
         description="Here's what's happening with your rentals this week."
         actions={
           <Button asChild>
@@ -45,8 +54,8 @@ function FarmerDashboard() {
           icon={<CalendarCheck className="size-4" />}
           tone="primary"
         />
-        <StatCard label="Total bookings" value={String(mine.length)} icon={<Package className="size-4" />} />
-        <StatCard label="Wishlist" value="3" hint="Saved for later" icon={<Heart className="size-4" />} />
+        <StatCard label="Total bookings" value={String(bookings.length)} icon={<Package className="size-4" />} />
+        <StatCard label="Wishlist" value={String(wishlist.length)} hint="Saved for later" icon={<Heart className="size-4" />} />
         <StatCard label="Spent this season" value={inr(spend)} icon={<Wallet className="size-4" />} />
       </div>
 
@@ -58,7 +67,7 @@ function FarmerDashboard() {
           </Button>
         }
       >
-        {mine.length === 0 ? (
+        {bookings.length === 0 ? (
           <EmptyState
             icon={<Search className="size-5" />}
             title="No bookings yet"
@@ -71,26 +80,29 @@ function FarmerDashboard() {
           />
         ) : (
           <ul className="divide-y divide-border">
-            {mine.slice(0, 4).map((b) => (
-              <li key={b.id} className="flex flex-wrap items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
-                <div>
-                  <Link
-                    to="/farmer/bookings/$bookingId"
-                    params={{ bookingId: b.id }}
-                    className="text-sm font-medium hover:text-primary"
-                  >
-                    {b.equipmentTitle}
-                  </Link>
-                  <p className="text-xs text-muted-foreground">
-                    {b.id} · {b.from} → {b.to}
-                  </p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-sm font-medium">{inr(b.amount)}</span>
-                  <StatusBadge status={b.status} />
-                </div>
-              </li>
-            ))}
+            {bookings.slice(0, 4).map((b) => {
+              const equipment = typeof b.equipment_id === "string" ? null : b.equipment_id;
+              return (
+                <li key={b._id} className="flex flex-wrap items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
+                  <div>
+                    <Link
+                      to="/farmer/bookings/$bookingId"
+                      params={{ bookingId: b._id }}
+                      className="text-sm font-medium hover:text-primary"
+                    >
+                      {equipment?.title ?? "Equipment"}
+                    </Link>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(b.start_date).toLocaleDateString()} → {new Date(b.end_date).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-medium">{inr(b.total_amount)}</span>
+                    <StatusBadge status={b.booking_status} />
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         )}
       </SectionCard>

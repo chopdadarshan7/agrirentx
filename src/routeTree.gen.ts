@@ -17,6 +17,7 @@ import { Route as RegisterRouteImport } from './routes/register'
 import { Route as RentalerRouteImport } from './routes/rentaler'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminBookingsRouteImport } from './routes/admin.bookings'
+import { Route as AdminBroadcastRouteImport } from './routes/admin.broadcast'
 import { Route as AdminEquipmentRouteImport } from './routes/admin.equipment'
 import { Route as AdminPaymentsRouteImport } from './routes/admin.payments'
 import { Route as AdminRentalersRouteImport } from './routes/admin.rentalers'
@@ -32,6 +33,7 @@ import { Route as FarmerProfileRouteImport } from './routes/farmer.profile'
 import { Route as FarmerWishlistRouteImport } from './routes/farmer.wishlist'
 import { Route as RentalerIndexRouteImport } from './routes/rentaler.index'
 import { Route as RentalerAnalyticsRouteImport } from './routes/rentaler.analytics'
+import { Route as RentalerEqtrackRouteImport } from './routes/rentaler.eqtrack'
 import { Route as FarmerBookingsIndexRouteImport } from './routes/farmer.bookings.index'
 import { Route as FarmerBookingsBookingIdRouteImport } from './routes/farmer.bookings.$bookingId'
 import { Route as RentalerBookingsIndexRouteImport } from './routes/rentaler.bookings.index'
@@ -78,6 +80,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
 const AdminBookingsRoute = AdminBookingsRouteImport.update({
   id: '/bookings',
   path: '/bookings',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminBroadcastRoute = AdminBroadcastRouteImport.update({
+  id: '/broadcast',
+  path: '/broadcast',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminEquipmentRoute = AdminEquipmentRouteImport.update({
@@ -155,6 +162,11 @@ const RentalerAnalyticsRoute = RentalerAnalyticsRouteImport.update({
   path: '/analytics',
   getParentRoute: () => RentalerRoute,
 } as any)
+const RentalerEqtrackRoute = RentalerEqtrackRouteImport.update({
+  id: '/eqtrack',
+  path: '/eqtrack',
+  getParentRoute: () => RentalerRoute,
+} as any)
 const FarmerBookingsIndexRoute = FarmerBookingsIndexRouteImport.update({
   id: '/bookings/',
   path: '/bookings/',
@@ -201,6 +213,7 @@ export interface FileRoutesByFullPath {
   '/register': typeof RegisterRoute
   '/rentaler': typeof RentalerRouteWithChildren
   '/admin/bookings': typeof AdminBookingsRoute
+  '/admin/broadcast': typeof AdminBroadcastRoute
   '/admin/equipment': typeof AdminEquipmentRoute
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/rentalers': typeof AdminRentalersRoute
@@ -213,6 +226,7 @@ export interface FileRoutesByFullPath {
   '/farmer/profile': typeof FarmerProfileRoute
   '/farmer/wishlist': typeof FarmerWishlistRoute
   '/rentaler/analytics': typeof RentalerAnalyticsRoute
+  '/rentaler/eqtrack': typeof RentalerEqtrackRoute
   '/admin/': typeof AdminIndexRoute
   '/equipment/': typeof EquipmentIndexRoute
   '/farmer/': typeof FarmerIndexRoute
@@ -230,6 +244,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/admin/bookings': typeof AdminBookingsRoute
+  '/admin/broadcast': typeof AdminBroadcastRoute
   '/admin/equipment': typeof AdminEquipmentRoute
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/rentalers': typeof AdminRentalersRoute
@@ -242,6 +257,7 @@ export interface FileRoutesByTo {
   '/farmer/profile': typeof FarmerProfileRoute
   '/farmer/wishlist': typeof FarmerWishlistRoute
   '/rentaler/analytics': typeof RentalerAnalyticsRoute
+  '/rentaler/eqtrack': typeof RentalerEqtrackRoute
   '/admin': typeof AdminIndexRoute
   '/equipment': typeof EquipmentIndexRoute
   '/farmer': typeof FarmerIndexRoute
@@ -263,6 +279,7 @@ export interface FileRoutesById {
   '/register': typeof RegisterRoute
   '/rentaler': typeof RentalerRouteWithChildren
   '/admin/bookings': typeof AdminBookingsRoute
+  '/admin/broadcast': typeof AdminBroadcastRoute
   '/admin/equipment': typeof AdminEquipmentRoute
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/rentalers': typeof AdminRentalersRoute
@@ -275,6 +292,7 @@ export interface FileRoutesById {
   '/farmer/profile': typeof FarmerProfileRoute
   '/farmer/wishlist': typeof FarmerWishlistRoute
   '/rentaler/analytics': typeof RentalerAnalyticsRoute
+  '/rentaler/eqtrack': typeof RentalerEqtrackRoute
   '/admin/': typeof AdminIndexRoute
   '/equipment/': typeof EquipmentIndexRoute
   '/farmer/': typeof FarmerIndexRoute
@@ -297,6 +315,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/rentaler'
     | '/admin/bookings'
+    | '/admin/broadcast'
     | '/admin/equipment'
     | '/admin/payments'
     | '/admin/rentalers'
@@ -309,6 +328,7 @@ export interface FileRouteTypes {
     | '/farmer/profile'
     | '/farmer/wishlist'
     | '/rentaler/analytics'
+    | '/rentaler/eqtrack'
     | '/admin/'
     | '/equipment/'
     | '/farmer/'
@@ -326,6 +346,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/admin/bookings'
+    | '/admin/broadcast'
     | '/admin/equipment'
     | '/admin/payments'
     | '/admin/rentalers'
@@ -338,6 +359,7 @@ export interface FileRouteTypes {
     | '/farmer/profile'
     | '/farmer/wishlist'
     | '/rentaler/analytics'
+    | '/rentaler/eqtrack'
     | '/admin'
     | '/equipment'
     | '/farmer'
@@ -358,6 +380,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/rentaler'
     | '/admin/bookings'
+    | '/admin/broadcast'
     | '/admin/equipment'
     | '/admin/payments'
     | '/admin/rentalers'
@@ -370,6 +393,7 @@ export interface FileRouteTypes {
     | '/farmer/profile'
     | '/farmer/wishlist'
     | '/rentaler/analytics'
+    | '/rentaler/eqtrack'
     | '/admin/'
     | '/equipment/'
     | '/farmer/'
@@ -451,6 +475,13 @@ declare module '@tanstack/react-router' {
       path: '/bookings'
       fullPath: '/admin/bookings'
       preLoaderRoute: typeof AdminBookingsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/broadcast': {
+      id: '/admin/broadcast'
+      path: '/broadcast'
+      fullPath: '/admin/broadcast'
+      preLoaderRoute: typeof AdminBroadcastRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/equipment': {
@@ -558,6 +589,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RentalerAnalyticsRouteImport
       parentRoute: typeof RentalerRoute
     }
+    '/rentaler/eqtrack': {
+      id: '/rentaler/eqtrack'
+      path: '/eqtrack'
+      fullPath: '/rentaler/eqtrack'
+      preLoaderRoute: typeof RentalerEqtrackRouteImport
+      parentRoute: typeof RentalerRoute
+    }
     '/farmer/bookings/': {
       id: '/farmer/bookings/'
       path: '/bookings'
@@ -612,6 +650,7 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminBookingsRoute: typeof AdminBookingsRoute
+  AdminBroadcastRoute: typeof AdminBroadcastRoute
   AdminEquipmentRoute: typeof AdminEquipmentRoute
   AdminPaymentsRoute: typeof AdminPaymentsRoute
   AdminRentalersRoute: typeof AdminRentalersRoute
@@ -622,6 +661,7 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminBookingsRoute: AdminBookingsRoute,
+  AdminBroadcastRoute: AdminBroadcastRoute,
   AdminEquipmentRoute: AdminEquipmentRoute,
   AdminPaymentsRoute: AdminPaymentsRoute,
   AdminRentalersRoute: AdminRentalersRoute,
@@ -657,6 +697,7 @@ const FarmerRouteWithChildren =
 
 interface RentalerRouteChildren {
   RentalerAnalyticsRoute: typeof RentalerAnalyticsRoute
+  RentalerEqtrackRoute: typeof RentalerEqtrackRoute
   RentalerIndexRoute: typeof RentalerIndexRoute
   RentalerBookingsBookingIdRoute: typeof RentalerBookingsBookingIdRoute
   RentalerEquipmentNewRoute: typeof RentalerEquipmentNewRoute
@@ -667,6 +708,7 @@ interface RentalerRouteChildren {
 
 const RentalerRouteChildren: RentalerRouteChildren = {
   RentalerAnalyticsRoute: RentalerAnalyticsRoute,
+  RentalerEqtrackRoute: RentalerEqtrackRoute,
   RentalerIndexRoute: RentalerIndexRoute,
   RentalerBookingsBookingIdRoute: RentalerBookingsBookingIdRoute,
   RentalerEquipmentNewRoute: RentalerEquipmentNewRoute,

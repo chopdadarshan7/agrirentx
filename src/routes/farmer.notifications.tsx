@@ -1,10 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
 import { BellOff, CheckCheck } from "lucide-react";
 import { EmptyState, PageHeader } from "@/components/Primitives";
 import { Button } from "@/components/ui/button";
-import { notifications as seed } from "@/lib/data";
 import { cn } from "@/lib/utils";
+import {
+  useNotifications,
+  useMarkNotificationRead,
+  useMarkAllNotificationsRead,
+} from "@/hooks/queries/use-notifications";
 
 export const Route = createFileRoute("/farmer/notifications")({
   head: () => ({
@@ -19,8 +22,10 @@ export const Route = createFileRoute("/farmer/notifications")({
 });
 
 function FarmerNotificationsPage() {
-  const [items, setItems] = useState(seed);
-  const unread = items.filter((n) => n.unread).length;
+  const { data: items = [] } = useNotifications();
+  const markRead = useMarkNotificationRead();
+  const markAllRead = useMarkAllNotificationsRead();
+  const unread = items.filter((n) => !n.isRead).length;
 
   return (
     <div className="space-y-6">
@@ -29,11 +34,7 @@ function FarmerNotificationsPage() {
         description={unread > 0 ? `${unread} unread` : "You're all caught up"}
         actions={
           items.length > 0 ? (
-            <Button
-              variant="outline"
-              onClick={() => setItems((n) => n.map((i) => ({ ...i, unread: false })))}
-              disabled={unread === 0}
-            >
+            <Button variant="outline" onClick={() => markAllRead.mutate()} disabled={unread === 0}>
               <CheckCheck className="size-4" />
               Mark all read
             </Button>
@@ -51,31 +52,27 @@ function FarmerNotificationsPage() {
         <ul className="space-y-3">
           {items.map((n) => (
             <li
-              key={n.id}
+              key={n._id}
               className={cn(
                 "surface-card flex items-start gap-3 p-4",
-                n.unread && "border-primary/30 bg-accent/40",
+                !n.isRead && "border-primary/30 bg-accent/40",
               )}
             >
               <span
                 className={cn(
                   "mt-1.5 size-2 shrink-0 rounded-full",
-                  n.unread ? "bg-primary" : "bg-border",
+                  !n.isRead ? "bg-primary" : "bg-border",
                 )}
               />
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium">{n.title}</p>
-                <p className="mt-0.5 text-sm text-muted-foreground">{n.body}</p>
-                <p className="mt-1 text-xs text-muted-foreground">{n.at}</p>
+                <p className="mt-0.5 text-sm text-muted-foreground">{n.message}</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {new Date(n.createdAt).toLocaleString()}
+                </p>
               </div>
-              {n.unread ? (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() =>
-                    setItems((list) => list.map((i) => (i.id === n.id ? { ...i, unread: false } : i)))
-                  }
-                >
+              {!n.isRead ? (
+                <Button variant="ghost" size="sm" onClick={() => markRead.mutate(n._id)}>
                   Mark read
                 </Button>
               ) : null}

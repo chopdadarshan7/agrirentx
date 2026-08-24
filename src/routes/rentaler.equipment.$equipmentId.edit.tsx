@@ -1,7 +1,8 @@
-import { createFileRoute, notFound, useParams } from "@tanstack/react-router";
+import { createFileRoute, useParams } from "@tanstack/react-router";
 import { EquipmentForm } from "@/components/EquipmentForm";
 import { PageHeader } from "@/components/Primitives";
-import { equipments } from "@/lib/data";
+import { useAuth } from "@/contexts/AuthContext";
+import { useMyEquipmentDetail } from "@/hooks/queries/use-equipment";
 
 export const Route = createFileRoute("/rentaler/equipment/$equipmentId/edit")({
   head: () => ({
@@ -17,8 +18,17 @@ export const Route = createFileRoute("/rentaler/equipment/$equipmentId/edit")({
 
 function EditEquipmentPage() {
   const { equipmentId } = useParams({ from: "/rentaler/equipment/$equipmentId/edit" });
-  const equipment = equipments.find((e) => e.id === equipmentId);
-  if (!equipment) throw notFound();
+  const { user } = useAuth();
+  const { data: equipment, isLoading } = useMyEquipmentDetail(user?._id, equipmentId);
+
+  if (isLoading) return null;
+  if (!equipment) {
+    return (
+      <div className="space-y-6">
+        <PageHeader title="Listing not found" description="This equipment isn't in your account." />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

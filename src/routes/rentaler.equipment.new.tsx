@@ -19,7 +19,7 @@ function AddEquipmentPage() {
     <div className="space-y-6">
       <PageHeader
         title="Add equipment"
-        description="Listings go live after admin verification, usually within two working days."
+        description="Listings go live after admin verification."
       />
       <EquipmentForm />
     </div>

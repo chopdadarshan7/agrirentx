@@ -18,6 +18,12 @@ const bookingValidationRules = [
     .withMessage("End date is required.")
     .isISO8601()
     .withMessage("Invalid end date."),
+
+  body("contact_phone")
+    .notEmpty()
+    .withMessage("A contact number is required.")
+    .matches(/^[6-9]\d{9}$/)
+    .withMessage("Enter a valid 10-digit mobile number."),
 ];
 
 const validateBooking = (req, res, next) => {

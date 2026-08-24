@@ -21,7 +21,7 @@ const createEquipment = async (req, res) => {
 
             description: req.body.description,
 
-            specifications: req.body.specifications || {},
+            specifications: req.body.specifications ? { ...req.body.specifications } : {},
 
             price_per_day: req.body.price_per_day,
 
@@ -88,6 +88,7 @@ const getAllEquipment = async (req, res) => {
       minPrice,
       maxPrice,
       status,
+      rentaler_id,
       sort = "latest",
       page = 1,
       limit = 10,
@@ -95,8 +96,15 @@ const getAllEquipment = async (req, res) => {
 
     const filter = {
       is_deleted: false,
-      approval_status: "approved",
     };
+
+    // Rentaler viewing their own listings (all approval statuses).
+    // Public search stays restricted to approved listings only.
+    if (rentaler_id) {
+      filter.rentaler_id = rentaler_id;
+    } else {
+      filter.approval_status = "approved";
+    }
 
     // Keyword Search
     if (search) {
@@ -272,8 +280,9 @@ const updateEquipment = async (req, res) => {
         equipment.description =
             req.body.description || equipment.description;
 
-        equipment.specifications =
-            req.body.specifications || equipment.specifications;
+        equipment.specifications = req.body.specifications
+            ? { ...req.body.specifications }
+            : equipment.specifications;
 
         equipment.price_per_day =
             req.body.price_per_day ?? equipment.price_per_day;

@@ -1,10 +1,15 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { AlertCircle } from "lucide-react";
 import { PublicShell } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { registerSchema, type RegisterFormValues } from "@/lib/validation/auth";
+import { useRegister } from "@/hooks/queries/use-auth";
+import { useRedirectIfAuthenticated } from "@/hooks/use-redirect-if-authenticated";
+import { ApiError } from "@/lib/api-client";
 
 export const Route = createFileRoute("/register")({
   head: () => ({
@@ -24,45 +29,27 @@ export const Route = createFileRoute("/register")({
   component: RegisterPage,
 });
 
-type Fields = { name: string; email: string; phone: string; password: string };
-
 function RegisterPage() {
-  const [values, setValues] = useState<Fields>({ name: "", email: "", phone: "", password: "" });
-  const [errors, setErrors] = useState<Partial<Fields>>({});
+  useRedirectIfAuthenticated();
+  const navigate = useNavigate();
+  const register = useRegister();
 
-  const set = (k: keyof Fields) => (e: React.ChangeEvent<HTMLInputElement>) =>
-    setValues((v) => ({ ...v, [k]: e.target.value }));
+  const form = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: { fullName: "", email: "", phone: "", password: "", confirmPassword: "" },
+  });
 
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const next: Partial<Fields> = {};
-    if (values.name.trim().length < 3) next.name = "Enter your full name.";
-    if (!/^\S+@\S+\.\S+$/.test(values.email)) next.email = "Enter a valid email address.";
-    if (!/^[0-9+\s-]{10,15}$/.test(values.phone)) next.phone = "Enter a 10-digit mobile number.";
-    if (values.password.length < 8) next.password = "Use at least 8 characters.";
-    setErrors(next);
+  const onSubmit = async (values: RegisterFormValues) => {
+    try {
+      await register.mutateAsync(values);
+      navigate({ to: "/farmer" });
+    } catch {
+      // error surfaced below via register.error
+    }
   };
 
-  const field = (
-    key: keyof Fields,
-    label: string,
-    type: string,
-    placeholder: string,
-  ) => (
-    <div className="space-y-1.5">
-      <Label htmlFor={key}>{label}</Label>
-      <Input
-        id={key}
-        type={type}
-        placeholder={placeholder}
-        value={values[key]}
-        onChange={set(key)}
-        aria-invalid={Boolean(errors[key])}
-        className={cn(errors[key] && "border-destructive focus-visible:ring-destructive/30")}
-      />
-      {errors[key] ? <p className="text-xs text-destructive">{errors[key]}</p> : null}
-    </div>
-  );
+  const errorMessage =
+    register.error instanceof ApiError ? register.error.message : register.error ? "Could not create your account." : null;
 
   return (
     <PublicShell>
@@ -74,15 +61,88 @@ function RegisterPage() {
             your profile.
           </p>
 
-          <form className="mt-5 space-y-4" onSubmit={submit} noValidate>
-            {field("name", "Full name", "text", "Aarti Deshmukh")}
-            {field("email", "Email", "email", "you@example.com")}
-            {field("phone", "Mobile number", "tel", "+91 98220 11223")}
-            {field("password", "Password", "password", "At least 8 characters")}
-            <Button type="submit" className="w-full">
-              Create account
-            </Button>
-          </form>
+          {errorMessage ? (
+            <p
+              role="alert"
+              className="mt-5 flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/8 px-3 py-2 text-sm text-destructive"
+            >
+              <AlertCircle className="mt-0.5 size-4 shrink-0" />
+              {errorMessage}
+            </p>
+          ) : null}
+
+          <Form {...form}>
+            <form className="mt-5 space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+              <FormField
+                control={form.control}
+                name="fullName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Full name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Aarti Deshmukh" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input type="email" placeholder="you@example.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Mobile number</FormLabel>
+                    <FormControl>
+                      <Input type="tel" placeholder="9876543210" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder="At least 6 characters" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirm password</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder="Re-enter your password" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="submit" className="w-full" disabled={register.isPending}>
+                {register.isPending ? "Creating account…" : "Create account"}
+              </Button>
+            </form>
+          </Form>
 
           <p className="mt-5 text-sm text-muted-foreground">
             Already registered?{" "}

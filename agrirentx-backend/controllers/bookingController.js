@@ -15,6 +15,7 @@ const { bookingEmail } = require("../utils/emailTemplates");
 
 const {
     sendBookingSMS,
+    sendOTP,
 } = require("../services/smsService");
 
 /**
@@ -60,17 +61,26 @@ const createBooking = async (req, res) => {
       });
     }
 
-    // Prevent booking own equipment
-    if (equipment.rentaler_id.toString() === req.user._id.toString()) {
-      return res.status(400).json({
-        success: false,
-        message: "You cannot book your own equipment.",
-      });
-    }
-
     // Check overlapping bookings
     const start = new Date(start_date);
     const end = new Date(end_date);
+
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
+    if (start < startOfToday) {
+      return res.status(400).json({
+        success: false,
+        message: "Start date cannot be in the past.",
+      });
+    }
+
+    if (end < start) {
+      return res.status(400).json({
+        success: false,
+        message: "End date cannot be before start date.",
+      });
+    }
 
     const existingBooking = await Booking.findOne({
       equipment_id,
@@ -125,7 +135,21 @@ const createBooking = async (req, res) => {
     const commissionPercent = parseFloat(process.env.PLATFORM_COMMISSION_PERCENT) || 10;
     const platformFee = Math.round((baseAmount * commissionPercent) / 100);
     const depositAmount = equipment.security_deposit || 0;
-    const deliveryCharge = parseFloat(req.body.delivery_charge) || 0;
+    const deliveryRequired =
+      req.body.delivery_required === true ||
+      req.body.delivery_required === "true";
+    const deliveryAddress = (req.body.delivery_address || "").trim();
+
+    if (deliveryRequired && !deliveryAddress) {
+      return res.status(400).json({
+        success: false,
+        message: "Enter a delivery address.",
+      });
+    }
+
+    const deliveryCharge = deliveryRequired
+      ? parseFloat(process.env.DELIVERY_CHARGE_FLAT) || 0
+      : 0;
     const totalAmount = baseAmount + depositAmount + platformFee + deliveryCharge;
 
     const booking = await Booking.create({
@@ -141,6 +165,9 @@ const createBooking = async (req, res) => {
       total_amount: totalAmount,
       booking_status: "pending_payment",
       payment_status: "pending",
+      delivery_required: deliveryRequired,
+      delivery_address: deliveryAddress,
+      contact_phone: req.body.contact_phone,
     });
 
     // Notify Rentaler
@@ -229,9 +256,13 @@ const getRentalerBookings = async (req, res) => {
       .populate("farmer_id", "fullName phone")
       .sort({ createdAt: -1 });
 
+    // The OTP only proves anything if the rentaler has to hear it from the
+    // farmer in person — never expose the raw value to the rentaler's own view.
     const bookingsData = bookings.map((b) => {
       const obj = b.toObject();
       obj.can_cancel = canCancel(b);
+      delete obj.delivery_otp;
+      delete obj.return_otp;
       return obj;
     });
 
@@ -239,6 +270,57 @@ const getRentalerBookings = async (req, res) => {
       success: true,
       count: bookingsData.length,
       data: bookingsData,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+/**
+ * Get Booking By Id
+ */
+const getBookingById = async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id)
+      .populate("equipment_id", "title images price_per_day")
+      .populate("farmer_id", "fullName phone")
+      .populate("rentaler_id", "fullName phone");
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: "Booking not found.",
+      });
+    }
+
+    const isParty = [booking.farmer_id?._id, booking.rentaler_id?._id].some(
+      (id) => id && id.toString() === req.user._id.toString()
+    );
+
+    if (!isParty && !req.user.isAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to view this booking.",
+      });
+    }
+
+    const obj = booking.toObject();
+    obj.can_cancel = canCancel(booking);
+
+    // Only the farmer should ever see the raw OTP — the rentaler must hear
+    // it from the farmer in person for the confirmation to mean anything.
+    const isFarmerViewing = booking.farmer_id?._id?.toString() === req.user._id.toString();
+    if (!isFarmerViewing) {
+      delete obj.delivery_otp;
+      delete obj.return_otp;
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: obj,
     });
   } catch (error) {
     return res.status(500).json({
@@ -486,6 +568,13 @@ const completeBooking = async (req, res) => {
     booking.completed_at = new Date();
     await booking.save();
 
+    // Equipment has been returned — make it bookable again
+    const returnedEquipment = await Equipment.findById(booking.equipment_id);
+    if (returnedEquipment) {
+      returnedEquipment.status = "available";
+      await returnedEquipment.save();
+    }
+
     // Notify Farmer
     await Notification.create({
       receiver_id: booking.farmer_id,
@@ -515,13 +604,243 @@ const completeBooking = async (req, res) => {
   }
 };
 
+function generateOtp() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+/**
+ * EqTrack — Generate Delivery OTP
+ * Rentaler triggers this before heading out; OTP goes to the farmer,
+ * who reads it back to the rentaler at the doorstep to confirm handoff.
+ */
+const generateDeliveryOtp = async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id);
+
+    if (!booking) {
+      return res.status(404).json({ success: false, message: "Booking not found." });
+    }
+
+    if (booking.rentaler_id.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to manage this booking's delivery.",
+      });
+    }
+
+    if (!booking.delivery_required) {
+      return res.status(400).json({
+        success: false,
+        message: "This booking doesn't require delivery.",
+      });
+    }
+
+    if (booking.logistics_status !== "awaiting_delivery") {
+      return res.status(400).json({
+        success: false,
+        message: "Delivery has already been confirmed for this booking.",
+      });
+    }
+
+    const otp = generateOtp();
+    booking.delivery_otp = otp;
+    booking.delivery_otp_generated_at = new Date();
+    await booking.save();
+
+    const farmer = await User.findById(booking.farmer_id);
+    if (farmer?.phone) {
+      await sendOTP({ phone: farmer.phone, otp });
+    }
+    await sendNotification({
+      receiver_id: booking.farmer_id,
+      title: "Delivery OTP",
+      message: `Your delivery OTP is ${otp}. Share it with the rentaler when the equipment arrives.`,
+      type: "booking",
+      reference_id: booking._id,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Delivery OTP sent to the farmer.",
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * EqTrack — Verify Delivery OTP
+ * Rentaler enters the OTP the farmer read out to confirm the equipment
+ * has physically reached the farmer.
+ */
+const verifyDeliveryOtp = async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id);
+
+    if (!booking) {
+      return res.status(404).json({ success: false, message: "Booking not found." });
+    }
+
+    if (booking.rentaler_id.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to manage this booking's delivery.",
+      });
+    }
+
+    if (booking.logistics_status !== "awaiting_delivery") {
+      return res.status(400).json({
+        success: false,
+        message: "Delivery has already been confirmed for this booking.",
+      });
+    }
+
+    if (!booking.delivery_otp || !req.body.otp || req.body.otp !== booking.delivery_otp) {
+      return res.status(400).json({ success: false, message: "Incorrect OTP." });
+    }
+
+    booking.logistics_status = "delivered";
+    booking.delivered_at = new Date();
+    booking.delivery_otp = "";
+    await booking.save();
+
+    await sendNotification({
+      receiver_id: booking.farmer_id,
+      title: "Equipment Delivered",
+      message: "Delivery confirmed — the equipment is now with you.",
+      type: "booking",
+      reference_id: booking._id,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Delivery confirmed.",
+      data: booking,
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * EqTrack — Generate Return OTP
+ * Rentaler triggers this when it's time to collect the equipment back;
+ * OTP goes to the farmer, who gives it to the rentaler at pickup to confirm return.
+ */
+const generateReturnOtp = async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id);
+
+    if (!booking) {
+      return res.status(404).json({ success: false, message: "Booking not found." });
+    }
+
+    if (booking.rentaler_id.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to manage this booking's return.",
+      });
+    }
+
+    if (booking.logistics_status !== "delivered") {
+      return res.status(400).json({
+        success: false,
+        message: "Equipment must be marked delivered before a return can be started.",
+      });
+    }
+
+    const otp = generateOtp();
+    booking.return_otp = otp;
+    booking.return_otp_generated_at = new Date();
+    await booking.save();
+
+    const farmer = await User.findById(booking.farmer_id);
+    if (farmer?.phone) {
+      await sendOTP({ phone: farmer.phone, otp });
+    }
+    await sendNotification({
+      receiver_id: booking.farmer_id,
+      title: "Return OTP",
+      message: `Your return OTP is ${otp}. Give it to the rentaler when they collect the equipment.`,
+      type: "booking",
+      reference_id: booking._id,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Return OTP sent to the farmer.",
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * EqTrack — Verify Return OTP
+ * Rentaler enters the OTP the farmer gave them to confirm the equipment
+ * has been physically returned.
+ */
+const verifyReturnOtp = async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id);
+
+    if (!booking) {
+      return res.status(404).json({ success: false, message: "Booking not found." });
+    }
+
+    if (booking.rentaler_id.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to manage this booking's return.",
+      });
+    }
+
+    if (booking.logistics_status !== "delivered") {
+      return res.status(400).json({
+        success: false,
+        message: "This booking isn't awaiting a return confirmation.",
+      });
+    }
+
+    if (!booking.return_otp || !req.body.otp || req.body.otp !== booking.return_otp) {
+      return res.status(400).json({ success: false, message: "Incorrect OTP." });
+    }
+
+    booking.logistics_status = "returned";
+    booking.returned_at = new Date();
+    booking.return_otp = "";
+    await booking.save();
+
+    await sendNotification({
+      receiver_id: booking.farmer_id,
+      title: "Return Confirmed",
+      message: "Thanks — your return has been confirmed by the rentaler.",
+      type: "booking",
+      reference_id: booking._id,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Return confirmed.",
+      data: booking,
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   createBooking,
   getMyBookings,
   getRentalerBookings,
+  getBookingById,
   approveBooking,
   rejectBooking,
   cancelBookingByFarmer,
   cancelBooking,
   completeBooking,
+  generateDeliveryOtp,
+  verifyDeliveryOtp,
+  generateReturnOtp,
+  verifyReturnOtp,
 };

@@ -5,7 +5,15 @@ import { EmptyState, PageHeader } from "@/components/Primitives";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { equipments as seed, inr, type ApprovalStatus } from "@/lib/data";
+import { inr } from "@/lib/data";
+import {
+  useAdminPendingEquipment,
+  useAdminApprovedEquipment,
+  useAdminAllEquipment,
+  useApproveEquipmentAdmin,
+  useRejectEquipmentAdmin,
+} from "@/hooks/queries/use-admin";
+import type { EquipmentCategoryRef, EquipmentRentalerRef } from "@/types/models";
 
 export const Route = createFileRoute("/admin/equipment")({
   head: () => ({
@@ -23,12 +31,15 @@ const tabs = ["pending", "approved", "rejected"] as const;
 
 function AdminEquipmentPage() {
   const [tab, setTab] = useState<(typeof tabs)[number]>("pending");
-  const [rows, setRows] = useState(seed);
+  const { data: pending = [] } = useAdminPendingEquipment();
+  const { data: approved = [] } = useAdminApprovedEquipment();
+  const { data: all = [] } = useAdminAllEquipment();
+  const rejected = all.filter((e) => e.approval_status === "rejected");
+  const approveEquipment = useApproveEquipmentAdmin();
+  const rejectEquipment = useRejectEquipmentAdmin();
 
-  const setStatus = (id: string, approvalStatus: ApprovalStatus) =>
-    setRows((list) => list.map((e) => (e.id === id ? { ...e, approvalStatus } : e)));
-
-  const list = rows.filter((e) => e.approvalStatus === tab);
+  const counts = { pending: pending.length, approved: approved.length, rejected: rejected.length };
+  const list = tab === "pending" ? pending : tab === "approved" ? approved : rejected;
 
   return (
     <div className="space-y-6">
@@ -38,7 +49,7 @@ function AdminEquipmentPage() {
         <TabsList>
           {tabs.map((t) => (
             <TabsTrigger key={t} value={t} className="capitalize">
-              {t} ({rows.filter((e) => e.approvalStatus === t).length})
+              {t} ({counts[t]})
             </TabsTrigger>
           ))}
         </TabsList>
@@ -52,29 +63,39 @@ function AdminEquipmentPage() {
         />
       ) : (
         <ul className="space-y-3">
-          {list.map((e) => (
-            <li key={e.id} className="surface-card flex flex-wrap items-center justify-between gap-4 p-4">
-              <div className="min-w-0">
-                <p className="font-medium">{e.title}</p>
-                <p className="text-sm text-muted-foreground">
-                  {e.owner} · {e.categoryName} · {e.district}, {e.state} · {inr(e.pricePerDay)}/day
-                </p>
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <StatusBadge status={e.approvalStatus} />
-                {e.approvalStatus !== "approved" ? (
-                  <Button size="sm" onClick={() => setStatus(e.id, "approved")}>
-                    Approve
-                  </Button>
-                ) : null}
-                {e.approvalStatus !== "rejected" ? (
-                  <Button size="sm" variant="outline" onClick={() => setStatus(e.id, "rejected")}>
-                    Reject
-                  </Button>
-                ) : null}
-              </div>
-            </li>
-          ))}
+          {list.map((e) => {
+            const owner = typeof e.rentaler_id === "string" ? null : (e.rentaler_id as EquipmentRentalerRef);
+            const category = typeof e.category_id === "string" ? null : (e.category_id as EquipmentCategoryRef);
+            return (
+              <li key={e._id} className="surface-card flex flex-wrap items-center justify-between gap-4 p-4">
+                <div className="min-w-0">
+                  <p className="font-medium">{e.title}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {owner?.fullName ?? "Rentaler"} · {category?.name ?? "Equipment"} ·{" "}
+                    {e.location.district ?? e.location.address} · {inr(e.price_per_day)}/day
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <StatusBadge status={e.approval_status} />
+                  {e.approval_status !== "approved" ? (
+                    <Button size="sm" onClick={() => approveEquipment.mutate(e._id)} disabled={approveEquipment.isPending}>
+                      Approve
+                    </Button>
+                  ) : null}
+                  {e.approval_status !== "rejected" ? (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => rejectEquipment.mutate({ id: e._id })}
+                      disabled={rejectEquipment.isPending}
+                    >
+                      Reject
+                    </Button>
+                  ) : null}
+                </div>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>

@@ -187,3 +187,22 @@
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
 }
+
+/* Google Translate widget: keep it fully invisible — driven programmatically
+   from our own LanguageSwitcher dropdown instead of showing Google's UI. */
+#google_translate_element {
+  display: none !important;
+}
+.goog-te-banner-frame,
+.goog-te-balloon-frame,
+.skiptranslate > iframe {
+  display: none !important;
+  visibility: hidden !important;
+}
+body {
+  top: 0 !important;
+}
+.goog-text-highlight {
+  background: none !important;
+  box-shadow: none !important;
+}

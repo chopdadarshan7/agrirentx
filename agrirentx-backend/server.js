@@ -17,6 +17,7 @@ const { initializeSocket } = require("./config/socket");
 
 
 const healthRoutes = require("./routes/healthRoutes");
+const dashboardRoutes = require("./routes/dashboardRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
@@ -46,7 +47,11 @@ connectDB().then(() => {
   startBookingExpireSweeper();
 });
 
-app.use(helmet());
+app.use(
+    helmet({
+        crossOriginResourcePolicy: { policy: "cross-origin" },
+    })
+);
 
 app.use(
     cors({
@@ -75,6 +80,7 @@ app.use("/api", apiLimiter);
 
 // Health Route
 app.use("/api/health", healthRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 
 // ==========================================

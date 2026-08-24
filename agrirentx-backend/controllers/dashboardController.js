@@ -23,7 +23,7 @@ exports.getRentalerDashboard = async (req, res) => {
         // Pending booking requests
         const pendingBookings = await Booking.countDocuments({
             rentaler_id: rentalerId,
-            booking_status: "pending",
+            booking_status: "pending_payment",
         });
 
         // Total reviews received
@@ -90,7 +90,7 @@ exports.getRentalerDashboard = async (req, res) => {
         const recentBookings = await Booking.find({
             rentaler_id: rentalerId,
         })
-        .populate("farmer_id", "full_name profile_image")
+        .populate("farmer_id", "fullName avatar")
         .populate("equipment_id", "title images")
         .sort({ createdAt: -1 })
         .limit(5)
@@ -116,7 +116,7 @@ exports.getRentalerDashboard = async (req, res) => {
         const recentReviews = await Review.find({
             rentaler_id: rentalerId,
         })
-        .populate("user_id", "full_name profile_image")
+        .populate("farmer_id", "fullName avatar")
         .populate("equipment_id", "title")
         .sort({ createdAt: -1 })
         .limit(5)

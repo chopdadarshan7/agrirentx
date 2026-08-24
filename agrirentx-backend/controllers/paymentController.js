@@ -134,6 +134,21 @@ exports.getPaymentById = async (req, res) => {
   try {
     const payment = await getPaymentByIdService(req.params.id);
 
+    const ownerIds = [
+      payment.booking_id?.farmer_id?._id,
+      payment.booking_id?.rentaler_id?._id,
+    ];
+    const isOwner = ownerIds.some(
+      (id) => id && id.toString() === req.user._id.toString()
+    );
+
+    if (!isOwner && !req.user.isAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to view this payment.",
+      });
+    }
+
     return res.status(200).json({
       success: true,
       data: payment,

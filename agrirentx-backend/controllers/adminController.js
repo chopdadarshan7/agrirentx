@@ -22,6 +22,7 @@ const {
     getAllUsersService,
     getUserByIdService,
     updateUserStatusService,
+    setUserBlockedService,
     deleteUserService,
     approveRentalerService,
     rejectRentalerService,
@@ -160,13 +161,13 @@ const blockUnblockUser = asyncHandler(async (req, res) => {
         });
     }
 
-    const newStatus = user.account_status === "blocked" ? "active" : "blocked";
-    const updatedUser = await updateUserStatusService(req.params.id, newStatus);
+    const nextBlocked = !user.isBlocked;
+    const updatedUser = await setUserBlockedService(req.params.id, nextBlocked);
 
     return successResponse(
         res,
         200,
-        updatedUser.account_status === "blocked"
+        nextBlocked
             ? "User blocked successfully."
             : "User unblocked successfully.",
         updatedUser
@@ -174,7 +175,7 @@ const blockUnblockUser = asyncHandler(async (req, res) => {
 });
 
 const unblockUser = asyncHandler(async (req, res) => {
-    const updatedUser = await updateUserStatusService(req.params.id, "active");
+    const updatedUser = await setUserBlockedService(req.params.id, false);
 
     return successResponse(
         res,
@@ -914,6 +915,7 @@ const broadcastNotification = asyncHandler(async (req, res) => {
         title: req.body.title,
         message: req.body.message,
         type: req.body.type,
+        audience: req.body.audience,
     });
 
     return successResponse(

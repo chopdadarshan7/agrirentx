@@ -4,10 +4,10 @@ import { cn } from "@/lib/utils";
  * The single status → colour mapping for the entire app (plan, section 1).
  * Never invent a per-page colour for a status.
  */
-const positive = ["approved", "confirmed", "completed", "paid", "available", "restored"];
-const waiting = ["pending", "awaiting", "processing"];
+const positive = ["approved", "confirmed", "completed", "paid", "available", "restored", "delivered", "returned"];
+const waiting = ["pending", "awaiting", "processing", "awaiting_delivery"];
 const negative = ["rejected", "cancelled", "failed", "blocked", "suspended", "hidden", "deleted"];
-const informational = ["active", "in-progress", "booked", "refunded"];
+const informational = ["active", "in-progress", "booked", "rented", "refunded"];
 
 export type StatusTone = "green" | "amber" | "red" | "blue" | "slate";
 
